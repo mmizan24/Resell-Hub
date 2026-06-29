@@ -52,7 +52,7 @@ export function Footer() {
   const year = new Date().getFullYear();
 
   return (
-    <footer className="w-full bg-blue-700">
+    <footer className="w-full border-t border-blue-400/60 bg-blue-700">
       {/* ── Main grid ── */}
       <div className="max-w-7xl mx-auto px-5 pt-14 pb-10">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10 lg:gap-12">

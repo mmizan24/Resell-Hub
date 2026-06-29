@@ -70,7 +70,7 @@ function ProductCard({ product, index }) {
   );
 }
 
-export function FeaturedProducts({ products }) {
+export function FeaturedProducts({ products = [] }) {
   return (
     <section className="py-20 bg-gray-50">
       <div className="max-w-7xl mx-auto px-5">
