@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
-import { Avatar, Button, Dropdown, Label, Separator } from "@heroui/react";
+import { Avatar, Dropdown, Label, Separator } from "@heroui/react";
 import { useSession, signOut } from "@/lib/auth-client";
 
 const NAV_LINKS = [
@@ -106,7 +106,7 @@ export function Navbar() {
 
   async function handleSignOut() {
     await signOut();
-    router.push("/sign-in");
+    router.push("/auth/sign-in");
   }
 
   return (
@@ -242,10 +242,8 @@ export function Navbar() {
                 </Dropdown.Popover>
               </Dropdown>
 
-              <Button
-                as={Link}
-                href="/sign-in"
-                variant="outline"
+              <Link
+                href="/auth/sign-in"
                 className="hidden sm:flex items-center gap-1.5 border border-white/35 text-white bg-transparent hover:bg-white/10 hover:border-white/60 text-sm font-medium px-4 h-9 rounded-lg transition-all duration-150"
               >
                 <svg
@@ -263,10 +261,9 @@ export function Navbar() {
                   <line x1="15" y1="12" x2="3" y2="12" />
                 </svg>
                 Login
-              </Button>
-              <Button
-                as={Link}
-                href="/sign-up"
+              </Link>
+              <Link
+                href="/auth/sign-up"
                 className="flex items-center gap-1.5 bg-white text-blue-700 hover:bg-blue-50 text-sm font-semibold px-4 h-9 rounded-lg shadow-sm transition-all duration-150"
               >
                 <svg
@@ -285,7 +282,7 @@ export function Navbar() {
                   <line x1="22" y1="11" x2="16" y2="11" />
                 </svg>
                 Register
-              </Button>
+              </Link>
             </div>
           )}
 
@@ -448,14 +445,14 @@ export function Navbar() {
           {!user && (
             <div className="flex gap-2 pt-3 mt-1 border-t border-white/10">
               <Link
-                href="/sign-in"
+                href="/auth/sign-in"
                 onClick={() => setMobileOpen(false)}
                 className="flex-1 text-center py-2.5 rounded-xl border border-white/30 text-white text-sm font-medium no-underline hover:bg-white/10 transition-colors"
               >
                 Login
               </Link>
               <Link
-                href="/sign-up"
+                href="/auth/sign-up"
                 onClick={() => setMobileOpen(false)}
                 className="flex-1 text-center py-2.5 rounded-xl bg-white text-blue-700 text-sm font-semibold no-underline hover:bg-blue-50 transition-colors"
               >

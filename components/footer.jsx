@@ -75,7 +75,7 @@ export function Footer() {
               </div>
               <div className="flex flex-col leading-none">
                 <span className="text-white font-bold text-xl tracking-tight">
-                  Shop<span className="text-blue-200">Hub</span>
+                  Resell<span className="text-blue-200">Hub</span>
                 </span>
                 <span className="text-blue-300 text-[10px] tracking-widest uppercase font-medium mt-0.5">
                   Online store
@@ -187,8 +187,8 @@ export function Footer() {
                 <div>
                   <p className="text-blue-400 text-[10px] uppercase tracking-wider font-bold mb-0.5">Email</p>
                   <p className="text-blue-200 text-sm leading-relaxed">
-                    support@shophub.com<br />
-                    hello@shophub.com
+                    support@resellhub.com<br />
+                    hello@resellhub.com
                   </p>
                 </div>
               </li>
@@ -271,7 +271,7 @@ export function Footer() {
             <div className="flex flex-col gap-2">
               <a
                 href="#"
-                aria-label="Get ShopHub on Google Play"
+                aria-label="Get ResellHub on Google Play"
                 className="flex items-center gap-2.5 bg-white/10 border border-white/15 rounded-xl px-3.5 py-2.5 hover:bg-white/18 transition-colors no-underline"
               >
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#93C5FD" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -284,7 +284,7 @@ export function Footer() {
               </a>
               <a
                 href="#"
-                aria-label="Download ShopHub on the App Store"
+                aria-label="Download ResellHub on the App Store"
                 className="flex items-center gap-2.5 bg-white/10 border border-white/15 rounded-xl px-3.5 py-2.5 hover:bg-white/18 transition-colors no-underline"
               >
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#93C5FD" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -309,7 +309,7 @@ export function Footer() {
       {/* ── Copyright bar ── */}
       <div className="max-w-7xl mx-auto px-5 py-5 flex flex-col sm:flex-row items-center justify-between gap-3">
         <p className="text-blue-300 text-xs text-center sm:text-left">
-          © {year} ShopHub. All rights reserved. Made with care in Bangladesh.
+          © {year} ResellHub. All rights reserved. Made with care in Bangladesh.
         </p>
         <nav className="flex items-center gap-5 flex-wrap justify-center">
           {BOTTOM_LINKS.map(({ href, label }) => (

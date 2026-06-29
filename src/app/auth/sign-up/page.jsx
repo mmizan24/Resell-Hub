@@ -6,7 +6,7 @@ export default function SignUpPage() {
       <div className="w-full max-w-md rounded-2xl border border-blue-100 bg-white p-8 shadow-sm">
         <h1 className="text-2xl font-bold text-blue-950">Create an account</h1>
         <p className="mt-2 text-sm text-slate-600">
-          Join ShopHub to start buying and reselling products.
+          Join ResellHub to start buying and reselling products.
         </p>
 
         <form className="mt-6 space-y-4">
@@ -51,7 +51,7 @@ export default function SignUpPage() {
 
         <p className="mt-5 text-center text-sm text-slate-600">
           Already have an account?{" "}
-          <Link href="/sign-in" className="font-semibold text-blue-700">
+          <Link href="/auth/sign-in" className="font-semibold text-blue-700">
             Sign in
           </Link>
         </p>

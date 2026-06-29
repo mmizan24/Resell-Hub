@@ -6,7 +6,7 @@ export default function SignInPage() {
       <div className="w-full max-w-md rounded-2xl border border-blue-100 bg-white p-8 shadow-sm">
         <h1 className="text-2xl font-bold text-blue-950">Sign in</h1>
         <p className="mt-2 text-sm text-slate-600">
-          Sign in to manage your ShopHub account.
+          Sign in to manage your ResellHub account.
         </p>
 
         <form className="mt-6 space-y-4">
@@ -39,8 +39,8 @@ export default function SignInPage() {
         </form>
 
         <p className="mt-5 text-center text-sm text-slate-600">
-          New to ShopHub?{" "}
-          <Link href="/sign-up" className="font-semibold text-blue-700">
+          New to ResellHub?{" "}
+          <Link href="/auth/sign-up" className="font-semibold text-blue-700">
             Create an account
           </Link>
         </p>
