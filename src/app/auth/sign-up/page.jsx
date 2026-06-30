@@ -46,9 +46,16 @@ export default function SignUpPage() {
 
     const formData = new FormData(event.currentTarget);
     const name = formData.get("name").trim();
+    const role = formData.get("role");
 
     if (!name) {
       setError("Please enter your name.");
+      setIsPending(false);
+      return;
+    }
+
+    if (!["seller", "buyer", "admin"].includes(role)) {
+      setError("Please select a valid role.");
       setIsPending(false);
       return;
     }
@@ -58,6 +65,7 @@ export default function SignUpPage() {
         name,
         email: formData.get("email").trim(),
         password: formData.get("password"),
+        role,
       });
 
       if (signUpError) {
@@ -164,6 +172,21 @@ export default function SignUpPage() {
                   className="mt-1.5 w-full rounded-lg border border-slate-300 px-3 py-2.5 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
                 />
               </label>
+
+              <label className="block text-sm font-medium text-slate-700">
+                Role
+                <select
+                  name="role"
+                  defaultValue="seller"
+                  required
+                  disabled={isPending}
+                  className="mt-1.5 w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  <option value="seller">Seller</option>
+                  <option value="buyer">Buyer</option>
+                  <option value="admin">Admin</option>
+                </select>
+              </label>
               
               <label className="block text-sm font-medium text-slate-700">
                 Password
@@ -190,7 +213,7 @@ export default function SignUpPage() {
                 disabled={isPending}
                 className="w-full rounded-lg bg-blue-700 px-4 py-2.5 font-semibold text-white transition-colors hover:bg-blue-800 disabled:cursor-not-allowed disabled:opacity-60"
               >
-                {isPending ? "Creating account..." : ""}
+                {isPending ? "Creating account..." : "Create account"}
               </button>
             </form>
 
