@@ -119,6 +119,12 @@ export function Navbar() {
   const isAuthLoading = !isHydrated || isPending;
   const userRole = user?.role || "seller";
   const roleLabel = userRole.charAt(0).toUpperCase() + userRole.slice(1);
+  const dashboardHref =
+    user?.role === "seller"
+      ? "/dashboard/seller"
+      : user?.role === "buyer"
+        ? "/dashboard/buyer"
+        : "/auth/sign-in";
 
   const initials = user?.name
     ? user.name.split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase()
@@ -168,12 +174,17 @@ export function Navbar() {
         {/* ── Desktop nav links ── */}
         <nav className="hidden md:flex items-center gap-0.5">
           {NAV_LINKS.map(({ href, label, icon }) => {
+            const navHref = label === "Dashboard" ? dashboardHref : href;
             const isActive =
-              href === "/" ? pathname === "/" : pathname.startsWith(href);
+              label === "Dashboard"
+                ? pathname.startsWith("/dashboard")
+                : href === "/"
+                  ? pathname === "/"
+                  : pathname.startsWith(href);
             return (
               <Link
                 key={href}
-                href={href}
+                href={navHref}
                 className={[
                   "flex items-center gap-2 px-3.5 py-2 rounded-lg text-sm font-medium transition-all duration-150 no-underline",
                   isActive
@@ -407,12 +418,17 @@ export function Navbar() {
       {mobileOpen && (
         <div className="md:hidden border-t border-white/10 bg-blue-800 px-4 py-3 flex flex-col gap-1">
           {NAV_LINKS.map(({ href, label, icon }) => {
+            const navHref = label === "Dashboard" ? dashboardHref : href;
             const isActive =
-              href === "/" ? pathname === "/" : pathname.startsWith(href);
+              label === "Dashboard"
+                ? pathname.startsWith("/dashboard")
+                : href === "/"
+                  ? pathname === "/"
+                  : pathname.startsWith(href);
             return (
               <Link
                 key={href}
-                href={href}
+                href={navHref}
                 onClick={() => setMobileOpen(false)}
                 className={[
                   "flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium no-underline transition-all duration-150",

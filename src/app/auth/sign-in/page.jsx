@@ -42,7 +42,7 @@ export default function SignInPage() {
     const formData = new FormData(event.currentTarget);
 
     try {
-      const { error: signInError } = await authClient.signIn.email({
+      const { data, error: signInError } = await authClient.signIn.email({
         email: formData.get("email").trim(),
         password: formData.get("password"),
       });
@@ -52,7 +52,10 @@ export default function SignInPage() {
         return;
       }
 
-      router.replace("/");
+      const dashboardPath =
+        data?.user?.role === "seller" ? "/dashboard/seller" : "/dashboard/buyer";
+
+      router.replace(dashboardPath);
       router.refresh();
     } catch {
       setError("Unable to reach the server. Please try again.");

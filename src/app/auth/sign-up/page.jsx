@@ -54,7 +54,7 @@ export default function SignUpPage() {
       return;
     }
 
-    if (!["seller", "buyer", "admin"].includes(role)) {
+    if (!["seller", "buyer"].includes(role)) {
       setError("Please select a valid role.");
       setIsPending(false);
       return;
@@ -184,7 +184,6 @@ export default function SignUpPage() {
                 >
                   <option value="seller">Seller</option>
                   <option value="buyer">Buyer</option>
-                  <option value="admin">Admin</option>
                 </select>
               </label>
               
