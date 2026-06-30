@@ -117,6 +117,8 @@ export function Navbar() {
 
   const user         = session?.user;
   const isAuthLoading = !isHydrated || isPending;
+  const userRole = user?.role || "seller";
+  const roleLabel = userRole.charAt(0).toUpperCase() + userRole.slice(1);
 
   const initials = user?.name
     ? user.name.split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase()
@@ -296,9 +298,14 @@ export function Navbar() {
                     </Avatar.Fallback>
                   </Avatar>
                   <div className="hidden sm:flex flex-col items-start leading-tight">
-                    <span className="text-white text-sm font-semibold leading-none">
-                      {user.name?.split(" ")[0]}
-                    </span>
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-white text-sm font-semibold leading-none">
+                        {user.name?.split(" ")[0]}
+                      </span>
+                      <span className="rounded-full bg-white/20 px-1.5 py-0.5 text-[10px] font-semibold leading-none text-blue-50">
+                        {roleLabel}
+                      </span>
+                    </div>
                     <span className="text-blue-200 text-[10px] mt-0.5">My account</span>
                   </div>
                   <svg className="w-3.5 h-3.5 text-blue-200 ml-0.5" viewBox="0 0 16 16" fill="currentColor">
@@ -317,6 +324,9 @@ export function Navbar() {
                       <div className="flex flex-col min-w-0">
                         <span className="text-white text-sm font-semibold truncate">{user.name}</span>
                         <span className="text-blue-200 text-xs truncate">{user.email}</span>
+                        <span className="mt-1 text-[10px] font-semibold uppercase tracking-wide text-blue-100">
+                          {roleLabel}
+                        </span>
                       </div>
                     </div>
 
