@@ -4,6 +4,7 @@ import { useSession } from "@/lib/auth-client";
 import Link from "next/link";
 
 const SIDEBAR_LINKS = [
+  { href: "/dashboard/seller#add-product", label: "Add Product" },
   { href: "/dashboard/seller#all-products", label: "All products" },
   { href: "/dashboard/seller#my-product", label: "My Product" },
   { href: "/dashboard/seller#manage-orders", label: "Manage Orders" },

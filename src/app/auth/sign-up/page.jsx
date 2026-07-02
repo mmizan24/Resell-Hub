@@ -1,6 +1,7 @@
 "use client";
 
 import { authClient } from "@/lib/auth-client";
+import { uploadImage, validateImageFile } from "@/lib/image-upload";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -46,10 +47,25 @@ export default function SignUpPage() {
 
     const formData = new FormData(event.currentTarget);
     const name = formData.get("name").trim();
+    const phoneNumber = formData.get("phoneNumber").trim();
+    const imageFile = formData.get("image");
     const role = formData.get("role");
 
     if (!name) {
       setError("Please enter your name.");
+      setIsPending(false);
+      return;
+    }
+
+    if (!phoneNumber) {
+      setError("Please enter your phone number.");
+      setIsPending(false);
+      return;
+    }
+
+    const imageError = validateImageFile(imageFile);
+    if (imageError) {
+      setError(imageError);
       setIsPending(false);
       return;
     }
@@ -61,10 +77,13 @@ export default function SignUpPage() {
     }
 
     try {
+      const image = await uploadImage(imageFile);
       const { error: signUpError } = await authClient.signUp.email({
         name,
         email: formData.get("email").trim(),
         password: formData.get("password"),
+        image,
+        phoneNumber,
         role,
       });
 
@@ -174,6 +193,33 @@ export default function SignUpPage() {
               </label>
 
               <label className="block text-sm font-medium text-slate-700">
+                Phone Number
+                <input
+                  type="tel"
+                  name="phoneNumber"
+                  autoComplete="tel"
+                  required
+                  disabled={isPending}
+                  className="mt-1.5 w-full rounded-lg border border-slate-300 px-3 py-2.5 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                />
+              </label>
+
+              <label className="block text-sm font-medium text-slate-700">
+                Profile Image
+                <input
+                  type="file"
+                  name="image"
+                  accept="image/jpeg,image/png,image/webp"
+                  required
+                  disabled={isPending}
+                  className="mt-1.5 block w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-600 outline-none file:mr-3 file:rounded-md file:border-0 file:bg-blue-50 file:px-3 file:py-2 file:text-sm file:font-semibold file:text-blue-700 hover:file:bg-blue-100 focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                />
+                <span className="mt-1.5 block text-xs font-normal text-slate-500">
+                  JPEG, PNG, or WebP. Maximum 10 MB.
+                </span>
+              </label>
+
+              <label className="block text-sm font-medium text-slate-700">
                 Role
                 <select
                   name="role"
@@ -212,7 +258,9 @@ export default function SignUpPage() {
                 disabled={isPending}
                 className="w-full rounded-lg bg-blue-700 px-4 py-2.5 font-semibold text-white transition-colors hover:bg-blue-800 disabled:cursor-not-allowed disabled:opacity-60"
               >
-                {isPending ? "Creating account..." : "Create account"}
+                {isPending
+                  ? "Uploading image and creating account..."
+                  : "Create account"}
               </button>
             </form>
 

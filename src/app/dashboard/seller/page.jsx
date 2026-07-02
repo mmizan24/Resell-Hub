@@ -1,5 +1,6 @@
 "use client";
 
+import { ProductForm } from "../../../../components/dashboard/ProductForm";
 import { useSession } from "@/lib/auth-client";
 import Link from "next/link";
 
@@ -78,6 +79,8 @@ export default function SellerDashboardPage() {
             <p className="mt-2 text-sm text-slate-600">Monitor your selling activity and performance.</p>
           </div>
         </div>
+
+        <ProductForm seller={user} />
       </div>
     </section>
   );

@@ -82,6 +82,25 @@ export default function BuyerDashboardPage() {
             Browse available products from sellers across ResellHub.
           </p>
         </div>
+
+        <div className="mt-4 grid gap-4 md:grid-cols-2">
+          <div id="my-orders" className="rounded-lg border border-blue-100 bg-white p-5 shadow-sm">
+            <h2 className="text-base font-bold text-blue-950">My Orders</h2>
+            <p className="mt-2 text-sm text-slate-600">View and track your active and past orders.</p>
+          </div>
+          <div id="wishlist" className="rounded-lg border border-blue-100 bg-white p-5 shadow-sm">
+            <h2 className="text-base font-bold text-blue-950">Wishlist</h2>
+            <p className="mt-2 text-sm text-slate-600">Review the products you saved for later.</p>
+          </div>
+          <div id="payment-history" className="rounded-lg border border-blue-100 bg-white p-5 shadow-sm">
+            <h2 className="text-base font-bold text-blue-950">Payment History</h2>
+            <p className="mt-2 text-sm text-slate-600">Check payment records for your purchases.</p>
+          </div>
+          <div id="profile-management" className="rounded-lg border border-blue-100 bg-white p-5 shadow-sm">
+            <h2 className="text-base font-bold text-blue-950">Profile Management</h2>
+            <p className="mt-2 text-sm text-slate-600">Keep your buyer profile and account details up to date.</p>
+          </div>
+        </div>
       </div>
     </section>
   );
