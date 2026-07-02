@@ -1,4 +1,5 @@
 import { ProductGallery } from "../../../../components/products/ProductGallery";
+import { BuyButton } from "../../../../components/checkout/BuyButton";
 import { getProductById } from "@/lib/products";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -91,6 +92,11 @@ export default async function ProductDetailPage({ params }) {
               <p className="mt-5 text-3xl font-bold text-blue-700">
                 {formatPrice(product.price)}
               </p>
+              <BuyButton
+                productId={product._id}
+                available={isAvailable}
+                className="mt-6"
+              />
 
               <div className="mt-7 border-t border-slate-100 pt-7">
                 <h2 className="text-lg font-bold text-slate-900">Description</h2>

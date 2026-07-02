@@ -23,6 +23,26 @@ export async function getProducts() {
   }
 }
 
+export async function getAvailableProducts() {
+  try {
+    const database = await getResellhubDatabase();
+    const products = await database
+      .collection("products")
+      .find({ status: "available" })
+      .sort({ _id: -1 })
+      .limit(100)
+      .toArray();
+
+    return products.map((product) => ({
+      ...product,
+      _id: product._id.toString(),
+    }));
+  } catch (error) {
+    console.error("Unable to load available products:", error);
+    return [];
+  }
+}
+
 export const getProductById = cache(async (id) => {
   if (typeof id !== "string" || !ObjectId.isValid(id)) {
     return null;

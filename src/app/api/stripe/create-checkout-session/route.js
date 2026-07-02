@@ -1,0 +1,172 @@
+import { auth } from "@/lib/auth";
+import { getResellhubDatabase } from "@/lib/mongodb";
+import { createPendingOrder } from "@/lib/orders";
+import { getStripe } from "@/lib/stripe";
+import { ObjectId } from "mongodb";
+
+function getBaseUrl(request) {
+  const configuredUrl = process.env.NEXT_PUBLIC_APP_URL;
+
+  if (configuredUrl) {
+    return configuredUrl.replace(/\/$/, "");
+  }
+
+  return new URL(request.url).origin;
+}
+
+export async function POST(request) {
+  const session = await auth.api.getSession({
+    headers: request.headers,
+  });
+  const buyer = session?.user;
+
+  if (!buyer) {
+    return Response.json(
+      { message: "Please sign in before purchasing." },
+      { status: 401 },
+    );
+  }
+
+  if (buyer.role !== "buyer") {
+    return Response.json(
+      { message: "Only buyer accounts can purchase products." },
+      { status: 403 },
+    );
+  }
+
+  let body;
+
+  try {
+    body = await request.json();
+  } catch {
+    return Response.json(
+      { message: "The checkout request is invalid." },
+      { status: 400 },
+    );
+  }
+
+  const productId = body?.productId;
+
+  if (typeof productId !== "string" || !ObjectId.isValid(productId)) {
+    return Response.json(
+      { message: "The selected product is invalid." },
+      { status: 400 },
+    );
+  }
+
+  const database = await getResellhubDatabase();
+  const product = await database
+    .collection("products")
+    .findOne({ _id: new ObjectId(productId) });
+
+  if (!product) {
+    return Response.json(
+      { message: "The selected product no longer exists." },
+      { status: 404 },
+    );
+  }
+
+  if (product.status !== "available") {
+    return Response.json(
+      { message: "This product is no longer available." },
+      { status: 409 },
+    );
+  }
+
+  const price = Number(product.price);
+
+  if (!Number.isFinite(price) || price <= 0) {
+    return Response.json(
+      { message: "This product does not have a valid price." },
+      { status: 422 },
+    );
+  }
+
+  const unitAmount = Math.round(price * 100);
+  const productImage = product.images?.find((image) => {
+    if (typeof image !== "string") return false;
+
+    try {
+      return new URL(image).protocol === "https:";
+    } catch {
+      return false;
+    }
+  });
+
+  let checkoutSession;
+
+  try {
+    const stripe = getStripe();
+    const baseUrl = getBaseUrl(request);
+
+    checkoutSession = await stripe.checkout.sessions.create({
+      mode: "payment",
+      client_reference_id: buyer.id,
+      customer_email: buyer.email,
+      billing_address_collection: "required",
+      phone_number_collection: {
+        enabled: true,
+      },
+      line_items: [
+        {
+          quantity: 1,
+          price_data: {
+            currency: "bdt",
+            unit_amount: unitAmount,
+            product_data: {
+              name: product.title.slice(0, 120),
+              description: product.description?.slice(0, 500) || undefined,
+              images: productImage ? [productImage] : undefined,
+              metadata: {
+                productId,
+                sellerId: product.sellerInfo?.userId || "",
+              },
+            },
+          },
+        },
+      ],
+      metadata: {
+        productId,
+        buyerId: buyer.id,
+        sellerId: product.sellerInfo?.userId || "",
+      },
+      payment_intent_data: {
+        metadata: {
+          productId,
+          buyerId: buyer.id,
+          sellerId: product.sellerInfo?.userId || "",
+        },
+      },
+      success_url: `${baseUrl}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${baseUrl}/checkout/cancel?product_id=${productId}`,
+    });
+
+    await createPendingOrder({
+      checkoutSession,
+      product,
+      buyer,
+    });
+  } catch (error) {
+    console.error("Unable to create Stripe Checkout session:", error);
+
+    if (checkoutSession?.id) {
+      try {
+        await getStripe().checkout.sessions.expire(checkoutSession.id);
+      } catch (expirationError) {
+        console.error(
+          "Unable to expire incomplete Checkout session:",
+          expirationError,
+        );
+      }
+    }
+
+    return Response.json(
+      { message: "Checkout could not be started. Please try again." },
+      { status: 502 },
+    );
+  }
+
+  return Response.json({
+    url: checkoutSession.url,
+  });
+}

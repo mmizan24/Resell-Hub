@@ -6,7 +6,6 @@ import Link from "next/link";
 const BUYER_LINKS = [
   { href: "/dashboard/buyer#all-seller-products", label: "ALL seller products" },
   { href: "/dashboard/buyer#my-orders", label: "My Orders" },
-  { href: "/dashboard/buyer#wishlist", label: "Wishlist" },
   { href: "/dashboard/buyer#payment-history", label: "Payment History" },
   { href: "/dashboard/buyer#profile-management", label: "Profile Management" },
 ];
