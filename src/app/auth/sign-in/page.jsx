@@ -1,6 +1,7 @@
 "use client";
 
 import { authClient } from "@/lib/auth-client";
+import { getDashboardPathForRole } from "@/lib/roles";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -52,8 +53,7 @@ export default function SignInPage() {
         return;
       }
 
-      const dashboardPath =
-        data?.user?.role === "seller" ? "/dashboard/seller" : "/dashboard/buyer";
+      const dashboardPath = getDashboardPathForRole(data?.user?.role);
 
       router.replace(dashboardPath);
       router.refresh();

@@ -4,19 +4,19 @@ import { getResellhubDatabase } from "@/lib/mongodb";
 import { ObjectId } from "mongodb";
 import { cache } from "react";
 
-const API_URL = process.env.API_URL || "http://localhost:5000";
-
 export async function getProducts() {
   try {
-    const response = await fetch(`${API_URL}/products`, {
-      cache: "no-store",
-    });
+    const database = await getResellhubDatabase();
+    const products = await database
+      .collection("products")
+      .find()
+      .sort({ _id: -1 })
+      .toArray();
 
-    if (!response.ok) {
-      throw new Error(`Products request failed with status ${response.status}`);
-    }
-
-    return await response.json();
+    return products.map((product) => ({
+      ...product,
+      _id: product._id.toString(),
+    }));
   } catch (error) {
     console.error("Unable to load products:", error);
     return [];

@@ -124,7 +124,9 @@ export function Navbar() {
       ? "/dashboard/seller"
       : user?.role === "buyer"
         ? "/dashboard/buyer"
-        : "/auth/sign-in";
+        : user?.role === "admin"
+          ? "/dashboard/admin"
+          : "/auth/sign-in";
 
   const initials = user?.name
     ? user.name.split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase()

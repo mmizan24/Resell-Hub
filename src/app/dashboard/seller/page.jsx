@@ -1,6 +1,8 @@
 "use client";
 
 import { ProductForm } from "../../../../components/dashboard/ProductForm";
+import { ProfileEditor } from "@/components/dashboard/ProfileEditor";
+import { SellerProductsTable } from "../../../../components/dashboard/SellerProductsTable";
 import { useSession } from "@/lib/auth-client";
 import Link from "next/link";
 
@@ -35,7 +37,7 @@ export default function SellerDashboardPage() {
     );
   }
 
-  if (user.role !== "seller") {
+  if (user.role !== "seller" && user.role !== "admin") {
     return (
       <section className="px-5 py-12 md:px-8">
         <div className="max-w-2xl rounded-lg border border-amber-100 bg-white p-6 shadow-sm">
@@ -80,7 +82,12 @@ export default function SellerDashboardPage() {
           </div>
         </div>
 
+        <div className="mt-8">
+          <ProfileEditor key={user?.id || user?.email || "seller-profile"} user={user} />
+        </div>
+
         <ProductForm seller={user} />
+        <SellerProductsTable />
       </div>
     </section>
   );

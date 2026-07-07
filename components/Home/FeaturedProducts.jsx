@@ -85,6 +85,13 @@ function ProductCard({ product, index }) {
         }`}>
           {product.condition}
         </span>
+        <span className={`absolute bottom-3 right-3 text-xs font-semibold px-2.5 py-1 rounded-full ${
+          product.status === "available"
+            ? "bg-emerald-100 text-emerald-700"
+            : "bg-rose-100 text-rose-700"
+        }`}>
+          {product.status === "available" ? "Available" : "Out of stock"}
+        </span>
       </div>
 
       {/* Content */}

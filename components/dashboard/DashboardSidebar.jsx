@@ -5,8 +5,7 @@ import Link from "next/link";
 
 const SIDEBAR_LINKS = [
   { href: "/dashboard/seller#add-product", label: "Add Product" },
-  { href: "/dashboard/seller#all-products", label: "All products" },
-  { href: "/dashboard/seller#my-product", label: "My Product" },
+  { href: "/dashboard/seller#my-products", label: "My Products" },
   { href: "/dashboard/seller#manage-orders", label: "Manage Orders" },
   { href: "/dashboard/seller#sales-analytics", label: "Sales Analytics" },
 ];

@@ -85,6 +85,8 @@ export default function SignUpPage() {
         image,
         phoneNumber,
         role,
+        location: formData.get("location"),
+
       });
 
       if (signUpError) {
@@ -230,6 +232,23 @@ export default function SignUpPage() {
                 >
                   <option value="seller">Seller</option>
                   <option value="buyer">Buyer</option>
+                  
+                </select>
+              </label>
+
+              <label className="block text-sm font-medium text-slate-700">
+                Location
+                <select
+                  name="location"
+                  // defaultValue="seller"
+                  required
+                  disabled={isPending}
+                  className="mt-1.5 w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  <option value="dhaka">Dhaka</option>
+                  <option value="chittagong">Chittagong</option>
+                  <option value="Khulna">Khulna</option>
+                  <option value="Rajshahi">Rajshahi</option>
                 </select>
               </label>
               

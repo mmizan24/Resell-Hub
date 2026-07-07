@@ -1,4 +1,5 @@
 import { BuyerProductCatalog } from "../../../../components/dashboard/BuyerProductCatalog";
+import { ProfileEditor } from "@/components/dashboard/ProfileEditor";
 import { auth } from "@/lib/auth";
 import { getBuyerOrders } from "@/lib/orders";
 import { getAvailableProducts } from "@/lib/products";
@@ -43,7 +44,7 @@ export default async function BuyerDashboardPage() {
     );
   }
 
-  if (user.role !== "buyer") {
+  if (user.role !== "buyer" && user.role !== "admin") {
     return (
       <section className="px-5 py-12 md:px-8">
         <div className="max-w-2xl rounded-lg border border-amber-100 bg-white p-6 shadow-sm">
@@ -111,6 +112,10 @@ export default async function BuyerDashboardPage() {
               Active listings from sellers.
             </p>
           </div>
+        </div>
+
+        <div className="mt-10">
+          <ProfileEditor key={user?.id || user?.email || "buyer-profile"} user={user} />
         </div>
 
         <BuyerProductCatalog products={products} />

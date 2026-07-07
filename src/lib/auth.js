@@ -22,7 +22,14 @@ export const auth = betterAuth({
       },
       phoneNumber:{
         type: "string",
+      },
+      location:{
+        type: "string",
+      },
+      staus:{
+        type: "string",
       }
+  
     }
     
   }

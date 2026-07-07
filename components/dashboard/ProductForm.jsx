@@ -1,6 +1,5 @@
 "use client";
 
-import { createProduct } from "@/app/dashboard/seller/actions";
 import { uploadImage, validateImageFile } from "@/lib/image-upload";
 import { useActionState, useEffect, useRef } from "react";
 
@@ -18,7 +17,7 @@ const CATEGORIES = [
   "Other",
 ];
 
-async function createProductWithImages(previousState, formData) {
+async function createProductWithImages(_previousState, formData) {
   const imageFiles = formData
     .getAll("imageFiles")
     .filter((file) => file instanceof File && file.size > 0);
@@ -39,13 +38,31 @@ async function createProductWithImages(previousState, formData) {
 
   try {
     const imageUrls = await Promise.all(imageFiles.map(uploadImage));
-    formData.delete("imageFiles");
+    const response = await fetch("/api/seller/products", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        title: formData.get("title"),
+        category: formData.get("category"),
+        condition: formData.get("condition"),
+        price: Number(formData.get("price")),
+        images: imageUrls,
+        description: formData.get("description"),
+        status: formData.get("status"),
+      }),
+    });
+    const result = await response.json().catch(() => null);
 
-    for (const imageUrl of imageUrls) {
-      formData.append("images", imageUrl);
+    if (!response.ok || !result?.success) {
+      throw new Error(result?.message || "The product could not be saved.");
     }
 
-    return await createProduct(previousState, formData);
+    return {
+      success: true,
+      message: result.message || "Product added successfully.",
+    };
   } catch (error) {
     return {
       success: false,
@@ -67,6 +84,7 @@ export function ProductForm({ seller }) {
   useEffect(() => {
     if (state.success) {
       formRef.current?.reset();
+      window.dispatchEvent(new Event("seller-products-changed"));
     }
   }, [state]);
 

@@ -1,6 +1,7 @@
 "use client";
 
 import { useSession } from "@/lib/auth-client";
+import { getDashboardPathForRole } from "@/lib/roles";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 
@@ -14,17 +15,12 @@ export default function DashboardPage() {
       return;
     }
 
-    if (role === "seller") {
-      router.replace("/dashboard/seller");
+    if (!role) {
+      router.replace("/auth/sign-in");
       return;
     }
 
-    if (role === "buyer") {
-      router.replace("/dashboard/buyer");
-      return;
-    }
-
-    router.replace("/auth/sign-in");
+    router.replace(getDashboardPathForRole(role));
   }, [isPending, role, router]);
 
   return (
