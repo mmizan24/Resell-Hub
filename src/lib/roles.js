@@ -2,6 +2,12 @@ export function normalizeRole(role) {
   return typeof role === "string" ? role.toLowerCase() : "";
 }
 
+export const MARKETPLACE_ROLES = ["seller", "buyer"];
+
+export function isMarketplaceRole(role) {
+  return MARKETPLACE_ROLES.includes(normalizeRole(role));
+}
+
 export function isAdminRole(role) {
   return normalizeRole(role) === "admin";
 }

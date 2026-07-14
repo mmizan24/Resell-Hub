@@ -2,6 +2,7 @@ import { AdminSidebar } from '../../../../components/dashboard/AdminSidebar';
 import { AdminUsersTable } from '../../../../components/dashboard/AdminUsersTable';
 import { AdminProductsTable } from '../../../../components/dashboard/AdminProductsTable';
 import { AdminOrdersTable } from '../../../../components/dashboard/AdminOrdersTable';
+import { AdminSettingsPanel } from '../../../../components/dashboard/AdminSettingsPanel';
 import { auth } from '@/lib/auth';
 import { getResellhubDatabase } from '@/lib/mongodb';
 import { MongoClient } from 'mongodb';
@@ -121,6 +122,8 @@ export default async function AdminDashboardPage() {
               </div>
             </div>
           </section>
+
+          <AdminSettingsPanel />
 
           <section className="space-y-6">
             <AdminUsersTable />

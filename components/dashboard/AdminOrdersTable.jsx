@@ -9,24 +9,35 @@ export function AdminOrdersTable() {
   const [editingId, setEditingId] = useState(null);
   const [form, setForm] = useState({ orderStatus: "", paymentStatus: "", amountTotal: "", currency: "" });
 
-  async function loadOrders() {
-    try {
-      const res = await fetch("/api/admin/orders", { credentials: "include" });
-      const json = await res.json();
-      if (res.ok && json?.success) {
-        setOrders(json.data || []);
-      } else {
-        setMessage(json?.message || "Unable to load orders.");
-      }
-    } catch {
-      setMessage("Unable to load orders right now.");
-    } finally {
-      setLoading(false);
-    }
-  }
-
   useEffect(() => {
-    loadOrders();
+    let active = true;
+
+    async function loadOrdersAsync() {
+      try {
+        const res = await fetch("/api/admin/orders", { credentials: "include" });
+        const json = await res.json();
+        if (!active) return;
+        if (res.ok && json?.success) {
+          setOrders(json.data || []);
+        } else {
+          setMessage(json?.message || "Unable to load orders.");
+        }
+      } catch {
+        if (active) {
+          setMessage("Unable to load orders right now.");
+        }
+      } finally {
+        if (active) {
+          setLoading(false);
+        }
+      }
+    }
+
+    void loadOrdersAsync();
+
+    return () => {
+      active = false;
+    };
   }, []);
 
   function startEdit(order) {
@@ -66,7 +77,7 @@ export function AdminOrdersTable() {
   }
 
   return (
-    <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+    <section id="orders" className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
       <div>
         <h2 className="text-xl font-bold text-blue-950">Buyer orders</h2>
         <p className="mt-1 text-sm text-slate-600">Review and edit every buyer purchase request and payment state.</p>

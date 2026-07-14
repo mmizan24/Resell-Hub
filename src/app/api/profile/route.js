@@ -1,4 +1,5 @@
 import { auth } from "@/lib/auth";
+import { isMarketplaceRole } from "@/lib/roles";
 import { headers } from "next/headers";
 
 export async function POST(request) {
@@ -15,6 +16,14 @@ export async function POST(request) {
       phoneNumber: body?.phoneNumber,
       location: body?.location,
     };
+
+    if (typeof body?.role === "string" && body.role.trim()) {
+      if (!isMarketplaceRole(body.role)) {
+        return Response.json({ message: "Please choose a valid role." }, { status: 400 });
+      }
+
+      payload.role = body.role.toLowerCase();
+    }
 
     if (typeof body?.image === "string" && body.image.trim()) {
       payload.image = body.image;

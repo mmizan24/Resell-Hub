@@ -1,6 +1,7 @@
 export function AdminSidebar() {
   const links = [
     { href: '/dashboard/admin#overview', label: 'Overview' },
+    { href: '/dashboard/admin#settings', label: 'Admin Settings' },
     { href: '/dashboard/admin#users', label: 'Manage Users' },
     { href: '/dashboard/admin#products', label: 'Manage Products' },
     { href: '/dashboard/admin#orders', label: 'Manage Orders' },

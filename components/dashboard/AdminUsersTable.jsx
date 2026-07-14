@@ -20,22 +20,33 @@ export function AdminUsersTable() {
   const [message, setMessage] = useState("");
   const [activeRole, setActiveRole] = useState("all");
 
-  async function loadUsers() {
-    try {
-      const res = await fetch("/api/admin/users", { credentials: "include" });
-      const json = await res.json();
-      if (res.ok && json?.success) {
-        setUsers(json.data || []);
-      }
-    } catch {
-      setMessage("Unable to load users right now.");
-    } finally {
-      setLoading(false);
-    }
-  }
-
   useEffect(() => {
-    loadUsers();
+    let active = true;
+
+    async function loadUsersAsync() {
+      try {
+        const res = await fetch("/api/admin/users", { credentials: "include" });
+        const json = await res.json();
+        if (!active) return;
+        if (res.ok && json?.success) {
+          setUsers(json.data || []);
+        }
+      } catch {
+        if (active) {
+          setMessage("Unable to load users right now.");
+        }
+      } finally {
+        if (active) {
+          setLoading(false);
+        }
+      }
+    }
+
+    void loadUsersAsync();
+
+    return () => {
+      active = false;
+    };
   }, []);
 
   const filteredUsers = users.filter((user) => {
@@ -85,7 +96,7 @@ export function AdminUsersTable() {
   }
 
   return (
-    <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+    <section id="users" className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
       <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
         <div>
           <h2 className="text-xl font-bold text-blue-950">Seller & buyer profiles</h2>

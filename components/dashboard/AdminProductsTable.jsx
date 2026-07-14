@@ -9,22 +9,33 @@ export function AdminProductsTable() {
   const [form, setForm] = useState({ title: "", category: "", condition: "", price: "", description: "", status: "" });
   const [message, setMessage] = useState("");
 
-  async function loadProducts() {
-    try {
-      const res = await fetch("/api/admin/products", { credentials: "include" });
-      const json = await res.json();
-      if (res.ok && json?.success) {
-        setProducts(json.data || []);
-      }
-    } catch {
-      setMessage("Unable to load products right now.");
-    } finally {
-      setLoading(false);
-    }
-  }
-
   useEffect(() => {
-    loadProducts();
+    let active = true;
+
+    async function loadProductsAsync() {
+      try {
+        const res = await fetch("/api/admin/products", { credentials: "include" });
+        const json = await res.json();
+        if (!active) return;
+        if (res.ok && json?.success) {
+          setProducts(json.data || []);
+        }
+      } catch {
+        if (active) {
+          setMessage("Unable to load products right now.");
+        }
+      } finally {
+        if (active) {
+          setLoading(false);
+        }
+      }
+    }
+
+    void loadProductsAsync();
+
+    return () => {
+      active = false;
+    };
   }, []);
 
   function startEdit(product) {
@@ -68,7 +79,7 @@ export function AdminProductsTable() {
   }
 
   return (
-    <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+    <section id="products" className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
       <div className="flex items-center justify-between gap-3">
         <div>
           <h2 className="text-xl font-bold text-blue-950">All products</h2>
