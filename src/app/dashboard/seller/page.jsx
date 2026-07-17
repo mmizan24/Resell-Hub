@@ -87,7 +87,7 @@ export default function SellerDashboardPage() {
         </div>
 
         <ProductForm seller={user} />
-        <SellerProductsTable />
+        <SellerProductsTable seller={user} />
       </div>
     </section>
   );

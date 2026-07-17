@@ -1,4 +1,5 @@
 import { BuyButton } from "../checkout/BuyButton";
+import { WishlistButton } from "../../src/components/wishlist/WishlistButton";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -9,7 +10,7 @@ function formatPrice(price) {
     : "Price unavailable";
 }
 
-export function BuyerProductCatalog({ products }) {
+export function BuyerProductCatalog({ products, userId }) {
   return (
     <section id="all-seller-products" className="mt-10 scroll-mt-24">
       <div>
@@ -77,6 +78,9 @@ export function BuyerProductCatalog({ products }) {
                   <span className="absolute bottom-3 left-3 rounded-full bg-slate-900/85 px-2.5 py-1 text-xs font-semibold text-white">
                     {Number.isInteger(product.quantity) ? product.quantity : 1} left
                   </span>
+                  <div className="absolute right-3 bottom-3">
+                    <WishlistButton product={product} userId={userId} />
+                  </div>
                 </div>
 
                 <div className="p-5">

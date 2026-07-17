@@ -1,9 +1,12 @@
 import { BuyerProductCatalog } from "../../../../components/dashboard/BuyerProductCatalog";
 import { ProductServiceNotice } from "../../../../components/Home/ProductServiceNotice";
 import { ProfileEditor } from "@/components/dashboard/ProfileEditor";
+import { WishlistPanel } from "../../../components/wishlist/WishlistPanel";
+import { BuyerReviewPanel } from "@/components/reviews/BuyerReviewPanel";
 import { auth } from "@/lib/auth";
 import { getBuyerOrders } from "@/lib/orders";
 import { getAvailableProducts } from "@/lib/products";
+import { getBuyerReviews } from "@/lib/reviews";
 import { headers } from "next/headers";
 import Link from "next/link";
 
@@ -60,14 +63,16 @@ export default async function BuyerDashboardPage() {
     );
   }
 
-  const [productsResult, ordersResult] = await Promise.allSettled([
+  const [productsResult, ordersResult, reviewsResult] = await Promise.allSettled([
     getAvailableProducts(),
     getBuyerOrders(user.id),
+    getBuyerReviews(user.id),
   ]);
 
   const products =
     productsResult.status === "fulfilled" ? productsResult.value : [];
   const orders = ordersResult.status === "fulfilled" ? ordersResult.value : [];
+  const reviews = reviewsResult.status === "fulfilled" ? reviewsResult.value : [];
   const productsLoadFailed = productsResult.status === "rejected";
   const ordersLoadFailed = ordersResult.status === "rejected";
   const paidOrders = orders.filter(
@@ -128,8 +133,12 @@ export default async function BuyerDashboardPage() {
         {productsLoadFailed ? (
           <ProductServiceNotice title="Available products are temporarily unavailable" />
         ) : (
-          <BuyerProductCatalog products={products} />
+          <BuyerProductCatalog products={products} userId={user.id} />
         )}
+
+        <WishlistPanel userId={user.id} />
+
+        <BuyerReviewPanel paidOrders={paidOrders} reviews={reviews} />
 
         <section id="my-orders" className="mt-12 scroll-mt-24">
           <h2 className="text-2xl font-bold text-blue-950">My orders</h2>
