@@ -1,5 +1,5 @@
 import { auth } from '@/lib/auth';
-import { getResellhubDatabase } from '@/lib/mongodb';
+import { updateAdminProduct } from '@/lib/product-service';
 import { ObjectId } from 'mongodb';
 
 async function getAdmin(request) {
@@ -24,24 +24,13 @@ export async function PATCH(request, { params }) {
 
   try {
     const body = await request.json();
-    const database = await getResellhubDatabase();
-    const update = {};
+    const result = await updateAdminProduct(id, body);
 
-    if (typeof body?.title === 'string') update.title = body.title;
-    if (typeof body?.category === 'string') update.category = body.category;
-    if (typeof body?.condition === 'string') update.condition = body.condition;
-    if (typeof body?.price === 'number') update.price = body.price;
-    if (typeof body?.description === 'string') update.description = body.description;
-    if (typeof body?.status === 'string') update.status = body.status;
-    if (Array.isArray(body?.images)) update.images = body.images;
-
-    const result = await database.collection('products').updateOne({ _id: new ObjectId(id) }, { $set: update });
-
-    if (result.matchedCount === 0) {
-      return Response.json({ success: false, message: 'Product not found.' }, { status: 404 });
+    if (result.error) {
+      return Response.json({ success: false, message: result.error }, { status: result.status || 422 });
     }
 
-    return Response.json({ success: true, message: 'Product updated.' });
+    return Response.json({ success: true, message: result.message || 'Product updated.' });
   } catch (error) {
     console.error('Unable to update product:', error);
     return Response.json({ success: false, message: 'Product could not be updated.' }, { status: 500 });

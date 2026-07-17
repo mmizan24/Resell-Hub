@@ -1,7 +1,5 @@
 import { auth } from "@/lib/auth";
-import { getResellhubDatabase } from "@/lib/mongodb";
-import { productDTO, validateProductPayload } from "@/lib/product-data";
-import { revalidatePath } from "next/cache";
+import { getSellerProducts, createSellerProduct } from "@/lib/product-service";
 
 async function getSeller(request) {
   const session = await auth.api.getSession({
@@ -31,16 +29,11 @@ export async function GET(request) {
   }
 
   try {
-    const database = await getResellhubDatabase();
-    const products = await database
-      .collection("products")
-      .find({ "sellerInfo.userId": seller.user.id })
-      .sort({ _id: -1 })
-      .toArray();
+    const products = await getSellerProducts(seller.user.id);
 
     return Response.json({
       success: true,
-      data: products.map(productDTO),
+      data: products,
     });
   } catch (error) {
     console.error("Unable to load seller products:", error);
@@ -88,48 +81,36 @@ export async function POST(request) {
     );
   }
 
-  const validation = validateProductPayload(payload);
-
-  if (validation.error) {
-    return Response.json(
-      { success: false, message: validation.error },
-      { status: 422 },
-    );
-  }
-
-  const product = {
-    title: validation.data.title,
-    category: validation.data.category,
-    condition: validation.data.condition,
-    price: validation.data.price,
-    images: validation.data.images,
-    description: validation.data.description,
-    sellerInfo: {
-      userId: seller.user.id,
-      name: seller.user.name,
-      email: seller.user.email,
-      phone: seller.user.phoneNumber,
-    },
-    status: validation.data.status,
-  };
-
   try {
-    const database = await getResellhubDatabase();
-    const result = await database.collection("products").insertOne(product);
-    const createdProduct = {
-      ...product,
-      _id: result.insertedId,
-    };
+    const result = await createSellerProduct({
+      title: payload.title,
+      category: payload.category,
+      condition: payload.condition,
+      price: Number(payload.price),
+      quantity: Number(payload.quantity),
+      images: payload.images,
+      description: payload.description,
+      sellerInfo: {
+        userId: seller.user.id,
+        name: seller.user.name,
+        email: seller.user.email,
+        phone: seller.user.phoneNumber,
+      },
+      status: payload.status,
+    });
 
-    revalidatePath("/");
-    revalidatePath("/products");
-    revalidatePath("/dashboard/buyer");
+    if (result.error) {
+      return Response.json(
+        { success: false, message: result.error },
+        { status: result.status || 422 },
+      );
+    }
 
     return Response.json(
       {
         success: true,
-        message: "Product added successfully.",
-        data: productDTO(createdProduct),
+        message: result.message || "Product added successfully.",
+        data: result.data,
       },
       { status: 201 },
     );

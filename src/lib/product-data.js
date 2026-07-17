@@ -34,6 +34,7 @@ export function validateProductPayload(payload, { requireImgBB = true } = {}) {
   const description = textValue(payload?.description);
   const status = textValue(payload?.status);
   const price = Number(payload?.price);
+  const quantity = Number(payload?.quantity);
   const images = [
     ...new Set(
       (Array.isArray(payload?.images) ? payload.images : [])
@@ -57,6 +58,17 @@ export function validateProductPayload(payload, { requireImgBB = true } = {}) {
 
   if (!Number.isFinite(price) || price <= 0) {
     return { error: "Price must be greater than zero." };
+  }
+
+  const quantityFloor = status === "out of stock" ? 0 : 1;
+
+  if (!Number.isInteger(quantity) || quantity < quantityFloor || quantity > 999) {
+    return {
+      error:
+        quantityFloor === 0
+          ? "Quantity must be an integer between 0 and 999."
+          : "Quantity must be an integer between 1 and 999.",
+    };
   }
 
   if (images.length === 0 || images.length > 8) {
@@ -87,6 +99,7 @@ export function validateProductPayload(payload, { requireImgBB = true } = {}) {
       category,
       condition,
       price,
+      quantity,
       images,
       description,
       status,
@@ -101,6 +114,7 @@ export function productDTO(product) {
     category: product.category,
     condition: product.condition,
     price: product.price,
+    quantity: Number.isInteger(product.quantity) && product.quantity >= 0 ? product.quantity : (product.status === "out of stock" ? 0 : 1),
     images: Array.isArray(product.images) ? product.images : [],
     description: product.description,
     sellerInfo: product.sellerInfo,

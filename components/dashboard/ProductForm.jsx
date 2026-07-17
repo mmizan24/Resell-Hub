@@ -48,6 +48,7 @@ async function createProductWithImages(_previousState, formData) {
         category: formData.get("category"),
         condition: formData.get("condition"),
         price: Number(formData.get("price")),
+        quantity: Number(formData.get("quantity")),
         images: imageUrls,
         description: formData.get("description"),
         status: formData.get("status"),
@@ -172,6 +173,26 @@ export function ProductForm({ seller }) {
               placeholder="35000"
               className={fieldClass}
             />
+          </label>
+
+          <label className="block text-sm font-medium text-slate-700">
+            Quantity
+            <input
+              type="number"
+              name="quantity"
+              min="1"
+              max="999"
+              step="1"
+              inputMode="numeric"
+              defaultValue="1"
+              required
+              disabled={isPending}
+              placeholder="5"
+              className={fieldClass}
+            />
+            <span className="mt-1.5 block text-xs font-normal leading-5 text-slate-500">
+              This is the remaining stock count buyers will see.
+            </span>
           </label>
 
           <label className="block text-sm font-medium text-slate-700">

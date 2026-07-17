@@ -62,6 +62,7 @@ function ProductCard({ product, index }) {
     Array.isArray(product.images) && typeof product.images[0] === "string"
       ? product.images[0]
       : null;
+  const stockCount = Number.isInteger(product.quantity) ? product.quantity : 1;
 
   return (
     <motion.div
@@ -91,6 +92,9 @@ function ProductCard({ product, index }) {
             : "bg-rose-100 text-rose-700"
         }`}>
           {product.status === "available" ? "Available" : "Out of stock"}
+        </span>
+        <span className="absolute bottom-3 left-3 rounded-full bg-slate-900/85 px-2.5 py-1 text-xs font-semibold text-white">
+          {stockCount} left
         </span>
       </div>
 

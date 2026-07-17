@@ -74,6 +74,9 @@ export function BuyerProductCatalog({ products }) {
                   >
                     {product.status === "available" ? "Available" : "Out of stock"}
                   </span>
+                  <span className="absolute bottom-3 left-3 rounded-full bg-slate-900/85 px-2.5 py-1 text-xs font-semibold text-white">
+                    {Number.isInteger(product.quantity) ? product.quantity : 1} left
+                  </span>
                 </div>
 
                 <div className="p-5">

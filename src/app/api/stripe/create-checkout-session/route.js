@@ -1,8 +1,7 @@
 import { auth } from "@/lib/auth";
-import { getResellhubDatabase } from "@/lib/mongodb";
 import { createPendingOrder } from "@/lib/orders";
+import { getProductById } from "@/lib/product-service";
 import { getStripe } from "@/lib/stripe";
-import { ObjectId } from "mongodb";
 
 function getBaseUrl(request) {
   const configuredUrl = process.env.NEXT_PUBLIC_APP_URL;
@@ -47,17 +46,14 @@ export async function POST(request) {
 
   const productId = body?.productId;
 
-  if (typeof productId !== "string" || !ObjectId.isValid(productId)) {
+  if (typeof productId !== "string" || !productId.trim()) {
     return Response.json(
       { message: "The selected product is invalid." },
       { status: 400 },
     );
   }
 
-  const database = await getResellhubDatabase();
-  const product = await database
-    .collection("products")
-    .findOne({ _id: new ObjectId(productId) });
+  const product = await getProductById(productId);
 
   if (!product) {
     return Response.json(

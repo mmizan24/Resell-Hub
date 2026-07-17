@@ -1,6 +1,7 @@
 import "server-only";
 
 import { getResellhubDatabase } from "@/lib/mongodb";
+import { markProductSold } from "@/lib/product-service";
 import { getStripe } from "@/lib/stripe";
 import { ObjectId } from "mongodb";
 
@@ -94,15 +95,10 @@ export async function fulfillCheckout(sessionId, expectedBuyerId) {
   );
 
   if (ObjectId.isValid(productId)) {
-    await database.collection("products").updateOne(
-      { _id: new ObjectId(productId) },
-      {
-        $set: {
-          status: "out of stock",
-          soldAt: now,
-          soldToUserId: checkoutSession.client_reference_id,
-        },
-      },
+    await markProductSold(
+      productId,
+      checkoutSession.client_reference_id,
+      now,
     );
   }
 

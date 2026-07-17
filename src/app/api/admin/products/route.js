@@ -17,9 +17,25 @@ export async function GET(request) {
 
   try {
     const database = await getResellhubDatabase();
-    const products = await database.collection('products').find().sort({ _id: -1 }).limit(500).toArray();
+    const products = await database.collection('products').find({}).sort({ _id: -1 }).toArray();
 
-    return Response.json({ success: true, data: products });
+    return Response.json({
+      success: true,
+      data: products.map((product) => ({
+        _id: product._id?.toString?.() || String(product._id),
+        title: product.title,
+        category: product.category,
+        condition: product.condition,
+        price: product.price,
+        quantity: Number.isInteger(product.quantity) && product.quantity >= 0 ? product.quantity : 0,
+        images: Array.isArray(product.images) ? product.images : [],
+        description: product.description,
+        sellerInfo: product.sellerInfo,
+        status: product.status,
+        createdAt: product.createdAt || null,
+        updatedAt: product.updatedAt || null,
+      })),
+    });
   } catch (error) {
     console.error('Unable to load products for admin:', error);
     return Response.json({ success: false, message: 'Products could not be loaded.' }, { status: 500 });

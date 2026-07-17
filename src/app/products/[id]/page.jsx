@@ -1,5 +1,6 @@
 import { ProductGallery } from "../../../../components/products/ProductGallery";
 import { BuyButton } from "../../../../components/checkout/BuyButton";
+import { ProductServiceNotice } from "../../../../components/Home/ProductServiceNotice";
 import { getProductById } from "@/lib/products";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -16,7 +17,13 @@ function formatPrice(price) {
 
 export async function generateMetadata({ params }) {
   const { id } = await params;
-  const product = await getProductById(id);
+  let product = null;
+
+  try {
+    product = await getProductById(id);
+  } catch {
+    product = null;
+  }
 
   if (!product) {
     return {
@@ -34,13 +41,25 @@ export async function generateMetadata({ params }) {
 
 export default async function ProductDetailPage({ params }) {
   const { id } = await params;
-  const product = await getProductById(id);
+  let product = null;
+  let loadError = null;
+
+  try {
+    product = await getProductById(id);
+  } catch (error) {
+    loadError = error;
+  }
+
+  if (loadError) {
+    return <ProductServiceNotice title="This product is temporarily unavailable" />;
+  }
 
   if (!product) {
     notFound();
   }
 
   const isAvailable = product.status === "available";
+  const stockCount = Number.isInteger(product.quantity) ? product.quantity : 1;
   const seller = product.sellerInfo || {};
 
   return (
@@ -75,6 +94,9 @@ export default async function ProductDetailPage({ params }) {
                 <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700">
                   {product.condition || "Condition not specified"}
                 </span>
+                <span className="rounded-full bg-slate-900 px-3 py-1 text-xs font-semibold text-white">
+                  {stockCount} left
+                </span>
                 <span
                   className={`rounded-full px-3 py-1 text-xs font-semibold ${
                     isAvailable
@@ -91,6 +113,9 @@ export default async function ProductDetailPage({ params }) {
               </h1>
               <p className="mt-5 text-3xl font-bold text-blue-700">
                 {formatPrice(product.price)}
+              </p>
+              <p className="mt-2 text-sm font-medium text-slate-500">
+                Balance remaining: {stockCount}
               </p>
               <BuyButton
                 productId={product._id}

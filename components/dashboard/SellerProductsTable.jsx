@@ -109,6 +109,7 @@ export function SellerProductsTable() {
             category: formData.get("category"),
             condition: formData.get("condition"),
             price: Number(formData.get("price")),
+            quantity: Number(formData.get("quantity")),
             images,
             description: formData.get("description"),
             status: formData.get("status"),
@@ -157,7 +158,10 @@ export function SellerProductsTable() {
             Loading your products...
           </p>
         ) : loadError ? (
-          <p role="alert" className="m-5 rounded-lg bg-red-50 p-4 text-sm text-red-700">
+          <p
+            role="alert"
+            className="m-5 rounded-lg bg-red-50 p-4 text-sm text-red-700"
+          >
             {loadError}
           </p>
         ) : products.length === 0 ? (
@@ -177,6 +181,9 @@ export function SellerProductsTable() {
                   </th>
                   <th scope="col" className="px-5 py-3 font-semibold">
                     Price
+                  </th>
+                  <th scope="col" className="px-5 py-3 font-semibold">
+                    Stock
                   </th>
                   <th scope="col" className="px-5 py-3 font-semibold">
                     Status
@@ -217,7 +224,10 @@ export function SellerProductsTable() {
                       {product.category}
                     </td>
                     <td className="whitespace-nowrap px-5 py-4 font-semibold text-blue-700">
-                      ৳ {Number(product.price).toLocaleString("en-BD")}
+                      BDT {Number(product.price).toLocaleString("en-BD")}
+                    </td>
+                    <td className="whitespace-nowrap px-5 py-4 text-slate-700">
+                      {Number.isInteger(product.quantity) ? product.quantity : 1}
                     </td>
                     <td className="whitespace-nowrap px-5 py-4">
                       <span
@@ -271,13 +281,7 @@ export function SellerProductsTable() {
   );
 }
 
-function EditProductDialog({
-  product,
-  isSaving,
-  error,
-  onClose,
-  onSubmit,
-}) {
+function EditProductDialog({ product, isSaving, error, onClose, onSubmit }) {
   const fieldClass =
     "mt-1.5 w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-slate-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 disabled:bg-slate-100 disabled:opacity-70";
 
@@ -351,13 +355,11 @@ function EditProductDialog({
               disabled={isSaving}
               className={fieldClass}
             >
-              {["New", "Like New", "Good", "Fair", "Poor"].map(
-                (condition) => (
-                  <option key={condition} value={condition}>
-                    {condition}
-                  </option>
-                ),
-              )}
+              {["New", "Like New", "Good", "Fair", "Poor"].map((condition) => (
+                <option key={condition} value={condition}>
+                  {condition}
+                </option>
+              ))}
             </select>
           </label>
 
@@ -368,6 +370,21 @@ function EditProductDialog({
               name="price"
               defaultValue={product.price}
               min="1"
+              step="1"
+              required
+              disabled={isSaving}
+              className={fieldClass}
+            />
+          </label>
+
+          <label className="block text-sm font-medium text-slate-700">
+            Quantity
+            <input
+              type="number"
+              name="quantity"
+              defaultValue={Number.isInteger(product.quantity) ? product.quantity : 1}
+              min="0"
+              max="999"
               step="1"
               required
               disabled={isSaving}

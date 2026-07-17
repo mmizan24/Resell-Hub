@@ -1,4 +1,5 @@
 import { BuyerProductCatalog } from "../../../../components/dashboard/BuyerProductCatalog";
+import { ProductServiceNotice } from "../../../../components/Home/ProductServiceNotice";
 import { ProfileEditor } from "@/components/dashboard/ProfileEditor";
 import { auth } from "@/lib/auth";
 import { getBuyerOrders } from "@/lib/orders";
@@ -59,10 +60,16 @@ export default async function BuyerDashboardPage() {
     );
   }
 
-  const [products, orders] = await Promise.all([
+  const [productsResult, ordersResult] = await Promise.allSettled([
     getAvailableProducts(),
     getBuyerOrders(user.id),
   ]);
+
+  const products =
+    productsResult.status === "fulfilled" ? productsResult.value : [];
+  const orders = ordersResult.status === "fulfilled" ? ordersResult.value : [];
+  const productsLoadFailed = productsResult.status === "rejected";
+  const ordersLoadFailed = ordersResult.status === "rejected";
   const paidOrders = orders.filter(
     (order) => order.paymentStatus === "paid",
   );
@@ -118,7 +125,11 @@ export default async function BuyerDashboardPage() {
           <ProfileEditor key={user?.id || user?.email || "buyer-profile"} user={user} />
         </div>
 
-        <BuyerProductCatalog products={products} />
+        {productsLoadFailed ? (
+          <ProductServiceNotice title="Available products are temporarily unavailable" />
+        ) : (
+          <BuyerProductCatalog products={products} />
+        )}
 
         <section id="my-orders" className="mt-12 scroll-mt-24">
           <h2 className="text-2xl font-bold text-blue-950">My orders</h2>
@@ -126,7 +137,11 @@ export default async function BuyerDashboardPage() {
             Your most recent Stripe Checkout activity.
           </p>
 
-          {orders.length === 0 ? (
+          {ordersLoadFailed ? (
+            <div className="mt-5 rounded-xl border border-amber-200 bg-amber-50 p-8 text-center text-sm text-amber-900 shadow-sm">
+              Your orders are temporarily unavailable because the backend API is offline.
+            </div>
+          ) : orders.length === 0 ? (
             <div className="mt-5 rounded-xl border border-slate-200 bg-white p-8 text-center text-sm text-slate-500 shadow-sm">
               You have not placed an order yet.
             </div>
