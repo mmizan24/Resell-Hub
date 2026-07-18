@@ -115,36 +115,36 @@ export default async function AdminDashboardPage() {
         </div>
 
         <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-          <div className="rounded-2xl border border-blue-100 bg-gradient-to-br from-blue-50 to-white p-5">
+          <div className="rounded-2xl border border-blue-100 bg-linear-to-br from-blue-50 to-white p-5">
             <p className="text-sm text-slate-500">Total users</p>
             <p className="mt-2 text-3xl font-bold text-blue-950">{overview?.totalUsers ?? '—'}</p>
             <p className="mt-1 text-xs text-slate-500">
               {overview?.buyerCount ?? 0} buyers • {overview?.sellerCount ?? 0} sellers
             </p>
           </div>
-          <div className="rounded-2xl border border-emerald-100 bg-gradient-to-br from-emerald-50 to-white p-5">
+          <div className="rounded-2xl border border-emerald-100 bg-linear-to-br from-emerald-50 to-white p-5">
             <p className="text-sm text-slate-500">Total products</p>
             <p className="mt-2 text-3xl font-bold text-emerald-700">{overview?.totalProducts ?? '—'}</p>
             <p className="mt-1 text-xs text-slate-500">Marketplace listings</p>
           </div>
-          <div className="rounded-2xl border border-amber-100 bg-gradient-to-br from-amber-50 to-white p-5">
+          <div className="rounded-2xl border border-amber-100 bg-linear-to-br from-amber-50 to-white p-5">
             <p className="text-sm text-slate-500">Total orders</p>
             <p className="mt-2 text-3xl font-bold text-amber-700">{overview?.totalOrders ?? '—'}</p>
             <p className="mt-1 text-xs text-slate-500">
               {overview?.paidOrders ?? 0} paid • {overview?.pendingOrders ?? 0} pending
             </p>
           </div>
-          <div className="rounded-2xl border border-violet-100 bg-gradient-to-br from-violet-50 to-white p-5">
+          <div className="rounded-2xl border border-violet-100 bg-linear-to-br from-violet-50 to-white p-5">
             <p className="text-sm text-slate-500">Buyer activity</p>
             <p className="mt-2 text-3xl font-bold text-violet-700">{overview?.buyerCount ?? 0}</p>
             <p className="mt-1 text-xs text-slate-500">Active buyer accounts</p>
           </div>
-          <div className="rounded-2xl border border-sky-100 bg-gradient-to-br from-sky-50 to-white p-5">
+          <div className="rounded-2xl border border-sky-100 bg-linear-to-br from-sky-50 to-white p-5">
             <p className="text-sm text-slate-500">Sellers</p>
             <p className="mt-2 text-3xl font-bold text-sky-700">{overview?.sellerCount ?? 0}</p>
             <p className="mt-1 text-xs text-slate-500">Selling accounts</p>
           </div>
-          <div className="rounded-2xl border border-rose-100 bg-gradient-to-br from-rose-50 to-white p-5">
+          <div className="rounded-2xl border border-rose-100 bg-linear-to-br from-rose-50 to-white p-5">
             <p className="text-sm text-slate-500">Revenue</p>
             <p className="mt-2 text-3xl font-bold text-rose-700">
               {overview?.totalRevenue ? `${overview.totalRevenue}` : '—'}

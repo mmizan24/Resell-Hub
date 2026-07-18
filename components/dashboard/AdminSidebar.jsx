@@ -119,7 +119,7 @@ export function AdminSidebar() {
   const pathname = usePathname();
 
   return (
-    <aside className={`sticky top-6 w-full self-start transition-all duration-300 ${collapsed ? "max-w-[88px]" : "max-w-[220px]"}`}>
+    <aside className={`sticky top-6 w-full self-start transition-all duration-300 ${collapsed ? "max-w-22" : "max-w-55"}`}>
       <nav
         aria-label="Admin dashboard navigation"
         className={`rounded-2xl border border-slate-200 bg-white shadow-sm transition-all duration-300 ${

@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { uploadImage, validateImageFile } from "@/lib/image-upload";
@@ -86,7 +87,14 @@ export function ProfileEditor({ user }) {
         <div className="flex items-start gap-4">
           <div className="flex h-14 w-14 items-center justify-center overflow-hidden rounded-full bg-blue-100 text-lg font-semibold text-blue-700">
             {user?.image ? (
-              <img src={user.image} alt={user.name || "Profile"} className="h-full w-full object-cover" />
+              <Image
+                src={user.image}
+                alt={user.name || "Profile"}
+                width={56}
+                height={56}
+                unoptimized
+                className="h-full w-full object-cover"
+              />
             ) : (
               <span>{(user?.name || "U").charAt(0).toUpperCase()}</span>
             )}

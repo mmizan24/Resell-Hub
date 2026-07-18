@@ -10,7 +10,7 @@ export default function SellerAddProductPage() {
 
   if (isPending) {
     return (
-      <section className="flex min-h-[360px] items-center justify-center px-5 py-12">
+      <section className="flex min-h-90 items-center justify-center px-5 py-12">
         <p className="text-sm font-medium text-slate-500">Loading add product page...</p>
       </section>
     );

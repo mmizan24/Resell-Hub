@@ -167,7 +167,7 @@ export function Navbar() {
   }
 
   return (
-    <header className="w-full bg-blue-700 shadow-md">
+    <header className="sticky top-0 z-50 w-full bg-blue-700 shadow-md">
       <div className="max-w-7xl mx-auto px-5 h-16 flex items-center justify-between gap-4">
 
         {/* ── Logo ── */}

@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "motion/react";
+import Image from "next/image";
 
 const STARS = (n) => "★".repeat(n) + "☆".repeat(5 - n);
 
@@ -51,9 +52,12 @@ export function SuccessStories({ stories = [] }) {
                 &ldquo;{story.comment}&rdquo;
               </p>
               <div className="flex items-center gap-3">
-                <img
+                <Image
                   src={story.photo || `https://i.pravatar.cc/100?u=${story._id}`}
-                  alt={story.reviewerInfo?.name}
+                  alt={story.reviewerInfo?.name || "Reviewer photo"}
+                  width={40}
+                  height={40}
+                  unoptimized
                   className="w-10 h-10 rounded-full object-cover border-2 border-white/30"
                 />
                 <div>
