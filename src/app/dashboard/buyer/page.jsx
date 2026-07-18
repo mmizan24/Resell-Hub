@@ -2,13 +2,14 @@ import { BuyerProductCatalog } from "../../../../components/dashboard/BuyerProdu
 import { ProductServiceNotice } from "../../../../components/Home/ProductServiceNotice";
 import { ProfileEditor } from "@/components/dashboard/ProfileEditor";
 import { WishlistPanel } from "../../../components/wishlist/WishlistPanel";
-import { BuyerReviewPanel } from "@/components/reviews/BuyerReviewPanel";
+import { BuyerReviewPanel } from "../../../components/reviews/BuyerReviewPanel";
 import { OrderStatusFlow } from "@/components/orders/OrderStatusFlow";
 import { auth } from "@/lib/auth";
 import { getBuyerOrders } from "@/lib/orders";
 import { getAvailableProducts } from "@/lib/products";
 import { getBuyerReviews } from "@/lib/reviews";
 import { headers } from "next/headers";
+import Image from "next/image";
 import Link from "next/link";
 
 function formatPriceFromMinorUnits(amount, currency) {
@@ -164,8 +165,25 @@ export default async function BuyerDashboardPage() {
                 {orders.map((order) => (
                   <article
                     key={order._id}
-                    className="grid gap-4 p-5 lg:grid-cols-[1fr_360px] lg:items-start"
+                    className="grid gap-4 p-5 lg:grid-cols-[120px_minmax(0,1fr)_360px] lg:items-start"
                   >
+                    <div className="overflow-hidden rounded-2xl border border-slate-200 bg-slate-50">
+                      {order.product?.image ? (
+                        <Image
+                          src={order.product.image}
+                          alt={order.product?.title || "Product order"}
+                          width={240}
+                          height={180}
+                          unoptimized
+                          className="h-28 w-full object-contain p-2"
+                        />
+                      ) : (
+                        <div className="flex h-28 items-center justify-center text-xs font-medium text-slate-400">
+                          Image unavailable
+                        </div>
+                      )}
+                    </div>
+
                     <div>
                       <h3 className="font-bold text-slate-900">
                         {order.product?.title || "Product order"}
@@ -186,6 +204,7 @@ export default async function BuyerDashboardPage() {
                         <OrderStatusFlow status={order.orderStatus} />
                       </div>
                     </div>
+
                     <div className="space-y-3 lg:text-right">
                       <p className="font-bold text-blue-700">
                         {formatPriceFromMinorUnits(
@@ -236,8 +255,14 @@ export default async function BuyerDashboardPage() {
               Payment history
             </h2>
             <p className="mt-2 text-sm text-slate-600">
-              Paid orders appear in the order history above.
+              Review your Stripe transactions, payment status, and transaction IDs.
             </p>
+            <Link
+              href="/dashboard/buyer/payments"
+              className="mt-4 inline-flex rounded-lg bg-blue-700 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-800"
+            >
+              Open payment history
+            </Link>
           </div>
           <div
             id="profile-management"

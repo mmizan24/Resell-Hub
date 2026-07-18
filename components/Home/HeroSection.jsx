@@ -3,78 +3,74 @@
 import { motion } from "motion/react";
 import Link from "next/link";
 
-export function HeroSection({ stats = {} }) {
+/* eslint-disable @next/next/no-img-element */
+export function HeroSection({ stats = {}, heroImage = "", heroTitle = "", heroCategory = "" }) {
   return (
-    <section className="relative bg-gradient-to-br from-blue-700 via-blue-600 to-blue-800 min-h-[92vh] flex items-center overflow-hidden">
-
-      {/* Background decorative circles */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-32 -right-32 w-96 h-96 bg-white/5 rounded-full" />
-        <div className="absolute top-1/2 -left-48 w-[500px] h-[500px] bg-blue-500/20 rounded-full" />
-        <div className="absolute -bottom-20 right-1/4 w-64 h-64 bg-blue-400/10 rounded-full" />
+    <section className="relative min-h-[92vh] flex items-center overflow-hidden bg-gradient-to-br from-blue-700 via-blue-600 to-blue-800">
+      <div className="pointer-events-none absolute inset-0 overflow-hidden">
+        <div className="absolute -top-32 -right-32 h-96 w-96 rounded-full bg-white/5" />
+        <div className="absolute top-1/2 -left-48 h-[500px] w-[500px] rounded-full bg-blue-500/20" />
+        <div className="absolute -bottom-20 right-1/4 h-64 w-64 rounded-full bg-blue-400/10" />
       </div>
 
-      <div className="relative max-w-7xl mx-auto px-5 w-full py-20 grid lg:grid-cols-2 gap-12 items-center">
-
-        {/* Left: text */}
+      <div className="relative mx-auto grid w-full max-w-7xl grid-cols-1 items-center gap-12 px-5 py-20 lg:grid-cols-2">
         <div>
           <motion.div
             initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="inline-flex items-center gap-2 bg-white/15 border border-white/25 rounded-full px-4 py-2 mb-6"
+            className="mb-6 inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/15 px-4 py-2"
           >
-            <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
-            <span className="text-white text-sm font-medium">Bangladesh&apos;s #1 resell marketplace</span>
+            <span className="h-2 w-2 rounded-full bg-green-400 animate-pulse" />
+            <span className="text-sm font-medium text-white">Bangladesh&apos;s #1 resell marketplace</span>
           </motion.div>
 
           <motion.h1
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.1 }}
-            className="text-white text-5xl lg:text-6xl font-bold leading-tight mb-6"
+            className="mb-6 text-5xl font-bold leading-tight text-white lg:text-6xl"
           >
             Buy & Sell{" "}
             <span className="relative">
               <span className="text-blue-200">Pre-owned</span>
               <svg className="absolute -bottom-2 left-0 w-full" viewBox="0 0 200 8" fill="none">
-                <path d="M0 6 Q50 0 100 4 Q150 8 200 2" stroke="#93C5FD" strokeWidth="2.5" strokeLinecap="round" fill="none"/>
+                <path d="M0 6 Q50 0 100 4 Q150 8 200 2" stroke="#93C5FD" strokeWidth="2.5" strokeLinecap="round" fill="none" />
               </svg>
             </span>{" "}
-            <br />Goods with Confidence
+            <br />
+            Goods with Confidence
           </motion.h1>
 
           <motion.p
             initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
-            className="text-blue-100 text-lg leading-relaxed mb-8 max-w-lg"
+            className="mb-8 max-w-lg text-lg leading-relaxed text-blue-100"
           >
-            From electronics to furniture — discover thousands of quality
-            second-hand products from trusted sellers across Bangladesh.
+            From electronics to furniture - discover thousands of quality second-hand products from trusted sellers across Bangladesh.
           </motion.p>
 
           <motion.div
             initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.3 }}
-            className="flex flex-wrap gap-3 mb-12"
+            className="mb-12 flex flex-wrap gap-3"
           >
             <Link
               href="/products"
-              className="bg-white text-blue-700 font-bold px-7 py-3.5 rounded-xl hover:bg-blue-50 transition-colors no-underline text-sm shadow-lg"
+              className="rounded-xl bg-white px-7 py-3.5 text-sm font-bold text-blue-700 no-underline shadow-lg transition-colors hover:bg-blue-50"
             >
-              Browse products →
+              Browse products &rarr;
             </Link>
             <Link
               href="/auth/sign-up"
-              className="border-2 border-white/40 text-white font-semibold px-7 py-3.5 rounded-xl hover:bg-white/10 transition-colors no-underline text-sm"
+              className="rounded-xl border-2 border-white/40 px-7 py-3.5 text-sm font-semibold text-white no-underline transition-colors hover:bg-white/10"
             >
               Start selling
             </Link>
           </motion.div>
 
-          {/* Mini stats row */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -83,49 +79,71 @@ export function HeroSection({ stats = {} }) {
           >
             {[
               { label: "Products listed", value: stats.totalProducts?.toLocaleString() || "0" },
-              { label: "Active sellers",  value: stats.totalSellers?.toLocaleString()  || "0" },
-              { label: "Happy buyers",    value: stats.totalBuyers?.toLocaleString()   || "0" },
+              { label: "Active sellers", value: stats.totalSellers?.toLocaleString() || "0" },
+              { label: "Happy buyers", value: stats.totalBuyers?.toLocaleString() || "0" },
             ].map((s) => (
               <div key={s.label}>
-                <p className="text-white text-2xl font-bold leading-none">{s.value}+</p>
-                <p className="text-blue-200 text-xs mt-1">{s.label}</p>
+                <p className="text-2xl font-bold leading-none text-white">{s.value}+</p>
+                <p className="mt-1 text-xs text-blue-200">{s.label}</p>
               </div>
             ))}
           </motion.div>
         </div>
 
-        {/* Right: floating product cards */}
         <motion.div
           initial={{ opacity: 0, scale: 0.92 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.7, delay: 0.2 }}
-          className="hidden lg:flex relative h-[480px] items-center justify-center"
+          className="relative hidden h-[480px] items-center justify-center lg:flex"
         >
-          {/* Main card */}
-          <div className="absolute bg-white rounded-2xl shadow-2xl p-5 w-64 top-12 left-8 z-10">
-            <div className="w-full h-36 bg-blue-100 rounded-xl mb-3 flex items-center justify-center text-4xl">💻</div>
-            <p className="text-gray-800 font-semibold text-sm">Dell Inspiron 15</p>
-            <p className="text-blue-600 font-bold text-lg mt-1">৳ 35,000</p>
-            <div className="flex items-center gap-1 mt-1">
-              <span className="text-green-500 text-xs font-semibold bg-green-50 px-2 py-0.5 rounded-full">Good condition</span>
+          <div className="relative h-full w-full max-w-[520px] overflow-hidden rounded-[2rem] border border-white/15 bg-white/10 shadow-2xl">
+            {heroImage ? (
+              <img
+                src={heroImage}
+                alt={heroTitle || "Featured product"}
+                className="absolute inset-0 h-full w-full object-cover"
+                loading="eager"
+              />
+            ) : (
+              <div
+                className="absolute inset-0 bg-cover bg-center"
+                style={{
+                  backgroundImage:
+                    "linear-gradient(180deg, rgba(8, 25, 54, 0.12) 0%, rgba(8, 25, 54, 0.55) 100%), linear-gradient(135deg, rgba(29, 78, 216, 0.25), rgba(14, 165, 233, 0.2))",
+                }}
+              />
+            )}
+
+            <div className="absolute inset-0 bg-gradient-to-t from-slate-950/55 via-slate-950/10 to-transparent" />
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.16),transparent_30%),radial-gradient(circle_at_bottom_left,rgba(59,130,246,0.28),transparent_36%)]" />
+
+            <div className="absolute inset-x-0 top-0 flex items-center justify-between px-5 py-4">
+              <div className="rounded-full border border-white/20 bg-white/18 px-4 py-2 text-xs font-semibold text-white backdrop-blur-md">
+                {heroCategory || "Curated marketplace"}
+              </div>
+              <div className="rounded-full bg-emerald-500/90 px-4 py-2 text-xs font-semibold text-white shadow-lg">
+                Verified product
+              </div>
             </div>
-          </div>
-          {/* Card 2 */}
-          <div className="absolute bg-white rounded-2xl shadow-xl p-4 w-52 bottom-16 left-0 z-20">
-            <div className="w-full h-28 bg-pink-50 rounded-xl mb-3 flex items-center justify-center text-3xl">👗</div>
-            <p className="text-gray-800 font-semibold text-sm">Designer Dress</p>
-            <p className="text-blue-600 font-bold">৳ 1,200</p>
-          </div>
-          {/* Card 3 */}
-          <div className="absolute bg-white rounded-2xl shadow-xl p-4 w-52 top-8 right-0 z-10">
-            <div className="w-full h-28 bg-amber-50 rounded-xl mb-3 flex items-center justify-center text-3xl">📱</div>
-            <p className="text-gray-800 font-semibold text-sm">iPhone 13 Pro</p>
-            <p className="text-blue-600 font-bold">৳ 68,000</p>
-          </div>
-          {/* Badge: verified */}
-          <div className="absolute bottom-8 right-4 bg-blue-600 text-white rounded-xl px-4 py-3 shadow-lg z-30">
-            <p className="text-xs font-bold">✓ Verified seller</p>
-            <p className="text-[10px] text-blue-200 mt-0.5">Safe & secure payment</p>
+
+            <div className="absolute inset-x-0 bottom-0 p-5">
+              <div className="max-w-sm rounded-2xl border border-white/15 bg-slate-950/40 p-4 backdrop-blur-md">
+                <p className="text-lg font-semibold text-white">{heroTitle || "A product buyers already trust"}</p>
+                <p className="mt-1 text-sm text-blue-100/90">
+                  Real marketplace photo, shown here as a featured listing from your current product feed.
+                </p>
+                <div className="mt-4 flex flex-wrap gap-2">
+                  {["Real product photo", "Fast search", "Secure checkout"].map((item) => (
+                    <span
+                      key={item}
+                      className="rounded-full border border-white/15 bg-white/10 px-3 py-1 text-[11px] font-medium text-white"
+                    >
+                      {item}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </div>
           </div>
         </motion.div>
       </div>

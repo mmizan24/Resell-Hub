@@ -43,39 +43,13 @@ export function BuyButton({
     }
 
     setIsRedirecting(true);
-
-    try {
-      const response = await fetch(
-        "/api/stripe/create-checkout-session",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ productId, quantity: selectedQuantity }),
-        },
-      );
-      const result = await response.json().catch(() => null);
-
-      if (!response.ok || !result?.url) {
-        throw new Error(
-          result?.message || "Checkout could not be started.",
-        );
-      }
-
-      window.location.assign(result.url);
-    } catch (checkoutError) {
-      setError(
-        checkoutError instanceof Error
-          ? checkoutError.message
-          : "Checkout could not be started.",
-      );
-      setIsRedirecting(false);
-    }
+    router.push(
+      `/checkout?productId=${encodeURIComponent(productId)}&quantity=${encodeURIComponent(selectedQuantity)}`,
+    );
   }
 
   const isDisabled =
-    !isStockAvailable || isSessionPending || isRedirecting;
+          !isStockAvailable || isSessionPending || isRedirecting;
 
   return (
     <div className={className}>
@@ -118,11 +92,11 @@ export function BuyButton({
           disabled={isDisabled}
         className="w-full rounded-lg bg-blue-700 px-4 py-3 text-sm font-semibold text-white transition hover:bg-blue-800 disabled:cursor-not-allowed disabled:bg-slate-300"
       >
-        {!isStockAvailable
+          {!isStockAvailable
           ? "Out of stock"
           : isRedirecting
-            ? "Opening secure checkout..."
-            : "Buy with Stripe"}
+            ? "Reviewing checkout..."
+            : "Proceed to checkout"}
       </button>
       {error && (
         <p role="alert" className="mt-2 text-xs leading-5 text-red-600">

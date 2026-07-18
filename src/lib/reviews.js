@@ -9,6 +9,7 @@ function mapReview(review) {
     _id: review._id.toString(),
     orderId: review.orderId ? String(review.orderId) : null,
     productId: review.productId ? String(review.productId) : null,
+    productImage: review.productImage || null,
   };
 }
 
@@ -169,6 +170,7 @@ export async function createReviewEntry({
     userId: buyer.id,
     name: order?.product?.title || "Product review",
     productId,
+    productImage: order?.product?.image || null,
     orderId,
     rating: rating === null || rating === undefined ? null : rating,
     comments: comments.trim(),

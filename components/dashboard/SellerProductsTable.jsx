@@ -278,7 +278,115 @@ export function SellerProductsTable({ seller }) {
               </div>
             ) : null}
 
-            <div className="overflow-x-auto">
+            <div className="md:hidden divide-y divide-slate-100">
+              {products.map((product) => {
+                const productReviews = reviewsByProduct.get(String(product._id)) || [];
+                const hasRatedReviews = productReviews.filter((review) => Number.isInteger(Number(review.rating)));
+                const ratedAverage = hasRatedReviews.length
+                  ? hasRatedReviews.reduce((sum, review) => sum + Number(review.rating), 0) / hasRatedReviews.length
+                  : 0;
+
+                return (
+                  <article key={product._id} className="p-4">
+                    <div className="flex items-start gap-3">
+                      <div className="relative h-16 w-20 shrink-0 overflow-hidden rounded-xl bg-slate-100">
+                        {product.images?.[0] ? (
+                          <Image
+                            src={product.images[0]}
+                            alt=""
+                            fill
+                            unoptimized
+                            sizes="80px"
+                            className="object-contain p-2"
+                          />
+                        ) : null}
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate text-sm font-semibold text-slate-900">{product.title}</p>
+                        <p className="mt-0.5 text-xs text-slate-500">{product.category} - {product.condition}</p>
+                        <p className="mt-1 text-sm font-bold text-blue-700">
+                          BDT {Number(product.price).toLocaleString("en-BD")}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="mt-3 grid grid-cols-2 gap-2 text-xs">
+                      <span className="rounded-lg bg-slate-100 px-2.5 py-2 text-slate-700">
+                        Stock: {Number.isInteger(product.quantity) ? product.quantity : 1}
+                      </span>
+                      <span className={`rounded-lg px-2.5 py-2 font-semibold ${approvalTone((product.approvalStatus || "pending").toLowerCase())}`}>
+                        {approvalLabel(product.approvalStatus)}
+                      </span>
+                      <span className="rounded-lg bg-blue-50 px-2.5 py-2 text-blue-700">
+                        Status: {product.status === "available" ? "Available" : "Out of stock"}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setExpandedProductId((current) =>
+                            current === product._id ? "" : product._id,
+                          )
+                        }
+                        className="rounded-lg border border-blue-200 px-2.5 py-2 font-semibold text-blue-700"
+                      >
+                        {expandedProductId === product._id ? "Hide reviews" : `Reviews (${productReviews.length})`}
+                      </button>
+                    </div>
+
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSaveError("");
+                          setEditingProduct(product);
+                        }}
+                        className="rounded-lg border border-blue-200 px-3 py-2 text-xs font-semibold text-blue-700"
+                      >
+                        Edit
+                      </button>
+                      {hasRatedReviews.length > 0 ? (
+                        <span className="rounded-lg bg-amber-50 px-3 py-2 text-xs font-semibold text-amber-700">
+                          {ratedAverage.toFixed(1)} avg rating
+                        </span>
+                      ) : null}
+                    </div>
+
+                    {expandedProductId === product._id ? (
+                      <div className="mt-4 rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                        <h4 className="text-sm font-semibold text-slate-900">Buyer reviews</h4>
+                        <p className="mt-1 text-xs text-slate-500">
+                          Buyer name, rating, and comment are shown below.
+                        </p>
+                        {productReviews.length === 0 ? (
+                          <p className="mt-3 text-sm text-slate-500">No one has reviewed this product yet.</p>
+                        ) : (
+                          <div className="mt-3 grid gap-3">
+                            {productReviews.map((review) => (
+                              <article key={review._id} className="rounded-xl border border-slate-200 bg-white p-3">
+                                <div className="flex items-start justify-between gap-3">
+                                  <div>
+                                    <p className="text-sm font-semibold text-slate-900">
+                                      {review.reviewerInfo?.name || "Unknown buyer"}
+                                    </p>
+                                    <p className="mt-1 text-xs text-slate-500">
+                                      {review.reviewerInfo?.email || "No email available"}
+                                    </p>
+                                  </div>
+                                  <span className="text-xs text-slate-500">{formatReviewDate(review.createdAt)}</span>
+                                </div>
+                                <p className="mt-2 text-sm leading-6 text-slate-700">{review.comments}</p>
+                              </article>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    ) : null}
+                  </article>
+                );
+              })}
+            </div>
+
+            <div className="hidden overflow-x-auto md:block">
               <table className="min-w-full divide-y divide-slate-200 text-left text-sm">
                 <thead className="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
                   <tr>

@@ -5,6 +5,39 @@ import { markProductSold } from "@/lib/product-service";
 import { getStripe } from "@/lib/stripe";
 import { ObjectId } from "mongodb";
 
+const backendBaseUrl = (process.env.API_URL?.trim() || "http://127.0.0.1:5000").replace(/\/$/, "");
+const backendApiBase = `${backendBaseUrl}/api`;
+
+function buildBackendUrl(path) {
+  const normalizedPath = path.startsWith("/") ? path : `/${path}`;
+  return `${backendApiBase}${normalizedPath}`;
+}
+
+async function readBackendJson(response) {
+  const data = await response.json().catch(() => null);
+  return data;
+}
+
+async function requestBackend(path, options = {}) {
+  const response = await fetch(buildBackendUrl(path), {
+    cache: "no-store",
+    ...options,
+    headers: {
+      Accept: "application/json",
+      ...(options.headers || {}),
+    },
+  });
+
+  const payload = await readBackendJson(response);
+
+  if (!response.ok) {
+    const message = payload?.message || payload?.error || "The payment service is unavailable.";
+    throw new Error(message);
+  }
+
+  return payload;
+}
+
 export const ORDER_STATUS_FLOW = [
   "pending",
   "accepted",
@@ -51,6 +84,14 @@ function normalizeQuantity(value, fallback = 1) {
   return fallback;
 }
 
+function normalizePaymentStatus(status) {
+  const value = typeof status === "string" ? status.trim().toLowerCase() : "";
+  if (["paid", "pending", "unpaid", "failed", "refunded", "cancelled"].includes(value)) {
+    return value;
+  }
+  return "paid";
+}
+
 function formatMonthKey(date) {
   return new Intl.DateTimeFormat("en-US", {
     month: "short",
@@ -63,6 +104,16 @@ function monthKey(date) {
   const year = date.getUTCFullYear();
   const month = String(date.getUTCMonth() + 1).padStart(2, "0");
   return `${year}-${month}`;
+}
+
+async function savePaymentRecordOnBackend(paymentRecord) {
+  const remote = await requestBackend("/payments/stripe", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(paymentRecord),
+  });
+
+  return remote?.data || null;
 }
 
 export async function createPendingOrder({ checkoutSession, product, buyer, quantity = 1 }) {
@@ -133,31 +184,95 @@ export async function fulfillCheckout(sessionId, expectedBuyerId) {
 
   const productId = checkoutSession.metadata?.productId;
   const quantity = normalizeQuantity(checkoutSession.metadata?.quantity, 1);
-  const database = await getResellhubDatabase();
   const now = new Date();
+  const orderId = checkoutSession.metadata?.orderId || checkoutSession.id;
+  const transactionId =
+    typeof checkoutSession.payment_intent === "string"
+      ? checkoutSession.payment_intent
+      : checkoutSession.payment_intent?.id || checkoutSession.id;
+
+  const database = await getResellhubDatabase();
+  const existingOrder = await database.collection("orders").findOne({
+    stripeSessionId: checkoutSession.id,
+  });
+  const orderSource = existingOrder || null;
+  const buyerInfo =
+    orderSource?.buyerInfo || {
+      userId: checkoutSession.client_reference_id || checkoutSession.metadata?.buyerId || "",
+      name: checkoutSession.customer_details?.name || null,
+      email: checkoutSession.customer_details?.email || null,
+    };
+  const sellerInfo =
+    orderSource?.sellerInfo || {
+      userId: checkoutSession.metadata?.sellerId || "",
+      name: null,
+      email: null,
+      phone: null,
+    };
+  const productInfo =
+    orderSource?.product || {
+      productId: productId || "",
+      title: checkoutSession.metadata?.productTitle || "Purchased product",
+      price: orderSource?.product?.price || Math.round((Number(checkoutSession.amount_total || 0) / Math.max(1, quantity)) || 0),
+      quantity,
+    };
+
+  const orderUpdate = {
+    paymentIntentId: transactionId,
+    amountTotal: checkoutSession.amount_total,
+    currency: checkoutSession.currency,
+    paymentStatus: "paid",
+    orderStatus: "pending",
+    customerDetails: {
+      name: checkoutSession.customer_details?.name || null,
+      email: checkoutSession.customer_details?.email || null,
+      phone: checkoutSession.customer_details?.phone || null,
+    },
+    paidAt: now,
+    updatedAt: now,
+  };
 
   await database.collection("orders").updateOne(
     { stripeSessionId: checkoutSession.id },
-    {
-      $set: {
-        paymentIntentId:
-          typeof checkoutSession.payment_intent === "string"
-            ? checkoutSession.payment_intent
-            : checkoutSession.payment_intent?.id || null,
-        amountTotal: checkoutSession.amount_total,
-        currency: checkoutSession.currency,
-        paymentStatus: "paid",
-        orderStatus: "pending",
-        customerDetails: {
-          name: checkoutSession.customer_details?.name || null,
-          email: checkoutSession.customer_details?.email || null,
-          phone: checkoutSession.customer_details?.phone || null,
-        },
-        paidAt: now,
-        updatedAt: now,
-      },
-    },
+    { $set: orderUpdate },
   );
+
+  const savedOrder = await database.collection("orders").findOne({
+    stripeSessionId: checkoutSession.id,
+  });
+
+  const paymentRecord = {
+    orderId: savedOrder?._id?.toString?.() || existingOrder?._id?.toString?.() || orderId,
+    stripeSessionId: checkoutSession.id,
+    transactionId,
+    paymentIntentId: transactionId,
+    buyerInfo,
+    sellerInfo,
+    product: {
+      productId: productInfo.productId ? String(productInfo.productId) : "",
+      title: productInfo.title || "Purchased product",
+      price: Number(productInfo.price || 0),
+      quantity,
+    },
+    quantity,
+    amountTotal: checkoutSession.amount_total,
+    currency: checkoutSession.currency,
+    paymentStatus: "paid",
+    paymentDate: now,
+    paymentMethod: "stripe",
+    checkoutStatus: normalizePaymentStatus(checkoutSession.payment_status),
+    customerDetails: {
+      name: checkoutSession.customer_details?.name || null,
+      email: checkoutSession.customer_details?.email || null,
+      phone: checkoutSession.customer_details?.phone || null,
+    },
+    updatedAt: now,
+  };
+
+  const savedPayment = await savePaymentRecordOnBackend({
+    ...paymentRecord,
+    createdAt: paymentRecord.createdAt || now,
+  });
 
   if (ObjectId.isValid(productId)) {
     await markProductSold(
@@ -171,6 +286,10 @@ export async function fulfillCheckout(sessionId, expectedBuyerId) {
   return {
     paid: true,
     checkoutSession,
+    payment: {
+      ...(savedPayment || paymentRecord),
+      _id: savedPayment?._id || paymentRecord.stripeSessionId,
+    },
   };
 }
 
@@ -287,6 +406,43 @@ export async function getSellerSalesAnalytics(sellerId) {
       ...item,
       revenue: Number(item.revenue.toFixed(2)),
     })),
+  };
+}
+
+export async function getBuyerPayments(buyerId) {
+  const remote = await requestBackend(`/payments?buyerId=${encodeURIComponent(buyerId || "")}`);
+  return Array.isArray(remote?.data) ? remote.data : [];
+}
+
+export async function getBuyerPaymentBySessionId(sessionId, buyerId = "") {
+  const remote = await requestBackend(
+    `/payments/${encodeURIComponent(sessionId)}?buyerId=${encodeURIComponent(buyerId || "")}`,
+  );
+
+  return remote?.data || null;
+}
+
+export async function getBuyerOrderById(orderId, buyerId = "") {
+  if (typeof orderId !== "string" || !ObjectId.isValid(orderId)) {
+    return null;
+  }
+
+  const database = await getResellhubDatabase();
+  const order = await database.collection("orders").findOne({
+    _id: new ObjectId(orderId),
+    ...(buyerId ? { "buyerInfo.userId": buyerId } : {}),
+  });
+
+  if (!order) {
+    return null;
+  }
+
+  return {
+    ...order,
+    _id: order._id.toString(),
+    orderStatus: normalizeOrderStatus(order.orderStatus),
+    paymentStatus: normalizePaymentStatus(order.paymentStatus),
+    quantity: normalizeQuantity(order.quantity, 1),
   };
 }
 

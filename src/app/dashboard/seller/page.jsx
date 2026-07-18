@@ -52,7 +52,7 @@ export default function SellerDashboardPage() {
 
   return (
     <section className="px-5 py-8 md:px-8 md:py-10">
-      <div className="max-w-5xl">
+      <div className="mx-auto w-full max-w-5xl">
         <p className="text-sm font-semibold uppercase tracking-wide text-blue-600">
           Seller Dashboard
         </p>

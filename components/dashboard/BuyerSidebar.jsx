@@ -8,7 +8,7 @@ const BUYER_LINKS = [
   { href: "/wishlist", label: "Wishlist" },
   { href: "/dashboard/buyer#reviews", label: "Reviews" },
   { href: "/dashboard/buyer#my-orders", label: "My Orders" },
-  { href: "/dashboard/buyer#payment-history", label: "Payment History" },
+  { href: "/dashboard/buyer/payments", label: "Payment History" },
   { href: "/dashboard/buyer#profile-management", label: "Profile Management" },
 ];
 

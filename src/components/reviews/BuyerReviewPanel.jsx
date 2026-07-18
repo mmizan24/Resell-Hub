@@ -1,10 +1,15 @@
 "use client";
 
+import Image from "next/image";
 import { useMemo, useState } from "react";
 
 function StarIcon({ filled = false }) {
   return (
-    <svg viewBox="0 0 24 24" className={`h-4 w-4 ${filled ? "fill-amber-400 text-amber-400" : "text-slate-300"}`} aria-hidden="true">
+    <svg
+      viewBox="0 0 24 24"
+      className={`h-4 w-4 ${filled ? "fill-amber-400 text-amber-400" : "text-slate-300"}`}
+      aria-hidden="true"
+    >
       <path
         d="m12 17.27 5.18 3.13-1.39-5.89L20.5 10.2l-6.03-.51L12 4.25 9.53 9.69 3.5 10.2l4.71 4.31-1.39 5.89L12 17.27Z"
         stroke="currentColor"
@@ -39,6 +44,22 @@ function formatMoney(amount, currency) {
 
 function defaultForm() {
   return { rating: "", comments: "" };
+}
+
+function getProductImage(item) {
+  if (typeof item?.product?.image === "string" && item.product.image.trim()) {
+    return item.product.image;
+  }
+
+  if (typeof item?.productImage === "string" && item.productImage.trim()) {
+    return item.productImage;
+  }
+
+  if (Array.isArray(item?.product?.images) && typeof item.product.images[0] === "string") {
+    return item.product.images[0];
+  }
+
+  return null;
 }
 
 export function BuyerReviewPanel({ paidOrders = [], reviews = [] }) {
@@ -166,71 +187,93 @@ export function BuyerReviewPanel({ paidOrders = [], reviews = [] }) {
             <div className="grid gap-4 lg:grid-cols-2">
               {pendingOrders.map((order) => {
                 const form = forms[order._id] || defaultForm();
+                const image = getProductImage(order);
 
                 return (
-                  <article key={order._id} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-                    <div className="flex items-start justify-between gap-3">
-                      <div>
-                        <p className="text-xs font-semibold uppercase tracking-wide text-blue-600">Purchased item</p>
-                        <h3 className="mt-1 text-lg font-bold text-slate-900">
-                          {order.product?.title || "Product order"}
-                        </h3>
-                        <p className="mt-1 text-sm text-slate-500">
-                          from {order.sellerInfo?.name || "Seller"}
-                        </p>
-                      </div>
-                      <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700">
-                        {formatMoney(order.amountTotal, order.currency)}
-                      </span>
-                    </div>
-
-                    <div className="mt-4 rounded-xl border border-slate-100 bg-slate-50 p-4">
-                      <div className="grid gap-4 md:grid-cols-[140px_minmax(0,1fr)]">
-                        <label className="space-y-1">
-                          <span className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-                            Rating
-                          </span>
-                          <select
-                            value={form.rating}
-                            onChange={(event) => updateForm(order._id, "rating", event.target.value)}
-                            className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
-                          >
-                            <option value="">No rating</option>
-                            <option value="5">5 - Excellent</option>
-                            <option value="4">4 - Very good</option>
-                            <option value="3">3 - Good</option>
-                            <option value="2">2 - Fair</option>
-                            <option value="1">1 - Poor</option>
-                          </select>
-                        </label>
-
-                        <label className="space-y-1">
-                          <span className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-                            Comments
-                          </span>
-                          <textarea
-                            value={form.comments}
-                            onChange={(event) => updateForm(order._id, "comments", event.target.value)}
-                            placeholder="Share what you liked, what could be better, and whether you would recommend the seller."
-                            rows={4}
-                            className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                  <article key={order._id} className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+                    <div className="grid gap-4 p-5 md:grid-cols-[120px_minmax(0,1fr)] md:items-start">
+                      <div className="overflow-hidden rounded-2xl border border-slate-200 bg-slate-50">
+                        {image ? (
+                          <Image
+                            src={image}
+                            alt={order.product?.title || "Purchased product"}
+                            width={240}
+                            height={180}
+                            unoptimized
+                            className="h-28 w-full object-contain p-2"
                           />
-                        </label>
+                        ) : (
+                          <div className="flex h-28 items-center justify-center text-xs font-medium text-slate-400">
+                            Image unavailable
+                          </div>
+                        )}
                       </div>
-                    </div>
 
-                    <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
-                      <p className="text-xs text-slate-500">
-                        Optional rating is supported. If you skip it, your comment still saves.
-                      </p>
-                      <button
-                        type="button"
-                        onClick={() => submitReview(order)}
-                        disabled={savingOrderId === order._id}
-                        className="rounded-xl bg-blue-700 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-800 disabled:cursor-not-allowed disabled:bg-slate-400"
-                      >
-                        {savingOrderId === order._id ? "Submitting..." : "Submit review"}
-                      </button>
+                      <div>
+                        <div className="flex items-start justify-between gap-3">
+                          <div>
+                            <p className="text-xs font-semibold uppercase tracking-wide text-blue-600">Purchased item</p>
+                            <h3 className="mt-1 text-lg font-bold text-slate-900">
+                              {order.product?.title || "Product order"}
+                            </h3>
+                            <p className="mt-1 text-sm text-slate-500">
+                              from {order.sellerInfo?.name || "Seller"}
+                            </p>
+                          </div>
+                          <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700">
+                            {formatMoney(order.amountTotal, order.currency)}
+                          </span>
+                        </div>
+
+                        <div className="mt-4 rounded-xl border border-slate-100 bg-slate-50 p-4">
+                          <div className="grid gap-4 md:grid-cols-[140px_minmax(0,1fr)]">
+                            <label className="space-y-1">
+                              <span className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                                Rating
+                              </span>
+                              <select
+                                value={form.rating}
+                                onChange={(event) => updateForm(order._id, "rating", event.target.value)}
+                                className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                              >
+                                <option value="">No rating</option>
+                                <option value="5">5 - Excellent</option>
+                                <option value="4">4 - Very good</option>
+                                <option value="3">3 - Good</option>
+                                <option value="2">2 - Fair</option>
+                                <option value="1">1 - Poor</option>
+                              </select>
+                            </label>
+
+                            <label className="space-y-1">
+                              <span className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                                Comments
+                              </span>
+                              <textarea
+                                value={form.comments}
+                                onChange={(event) => updateForm(order._id, "comments", event.target.value)}
+                                placeholder="Share what you liked, what could be better, and whether you would recommend the seller."
+                                rows={4}
+                                className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                              />
+                            </label>
+                          </div>
+                        </div>
+
+                        <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
+                          <p className="text-xs text-slate-500">
+                            Optional rating is supported. If you skip it, your comment still saves.
+                          </p>
+                          <button
+                            type="button"
+                            onClick={() => submitReview(order)}
+                            disabled={savingOrderId === order._id}
+                            className="rounded-xl bg-blue-700 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-800 disabled:cursor-not-allowed disabled:bg-slate-400"
+                          >
+                            {savingOrderId === order._id ? "Submitting..." : "Submit review"}
+                          </button>
+                        </div>
+                      </div>
                     </div>
                   </article>
                 );
@@ -252,33 +295,56 @@ export function BuyerReviewPanel({ paidOrders = [], reviews = [] }) {
               </div>
             ) : (
               <div className="divide-y divide-slate-100">
-                {submittedReviews.map((review) => (
-                  <article key={review._id} className="px-5 py-4">
-                    <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
-                      <div>
-                        <p className="text-sm font-semibold text-slate-900">
-                          {review.name || "Product review"}
-                        </p>
-                        <p className="mt-1 text-xs text-slate-500">
-                          Review by {review.reviewerInfo?.name || "Buyer"} • {review.productId}
-                        </p>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        {review.rating === null || review.rating === undefined ? (
-                          <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">
-                            No rating
-                          </span>
+                {submittedReviews.map((review) => {
+                  const image = getProductImage(review);
+
+                  return (
+                    <article key={review._id} className="grid gap-4 px-5 py-4 md:grid-cols-[96px_minmax(0,1fr)]">
+                      <div className="overflow-hidden rounded-2xl border border-slate-200 bg-slate-50">
+                        {image ? (
+                          <Image
+                            src={image}
+                            alt={review.name || "Reviewed product"}
+                            width={192}
+                            height={144}
+                            unoptimized
+                            className="h-24 w-full object-contain p-2"
+                          />
                         ) : (
-                          <div className="flex items-center gap-2">
-                            <RatingStars value={review.rating} />
-                            <span className="text-xs font-semibold text-slate-600">{review.rating}/5</span>
+                          <div className="flex h-24 items-center justify-center text-xs font-medium text-slate-400">
+                            Image unavailable
                           </div>
                         )}
                       </div>
-                    </div>
-                    <p className="mt-3 text-sm leading-6 text-slate-600">{review.comments}</p>
-                  </article>
-                ))}
+
+                      <div>
+                        <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+                          <div>
+                            <p className="text-sm font-semibold text-slate-900">
+                              {review.name || "Product review"}
+                            </p>
+                            <p className="mt-1 text-xs text-slate-500">
+                              Review by {review.reviewerInfo?.name || "Buyer"} • {review.productId}
+                            </p>
+                          </div>
+                          <div className="flex items-center gap-3">
+                            {review.rating === null || review.rating === undefined ? (
+                              <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">
+                                No rating
+                              </span>
+                            ) : (
+                              <div className="flex items-center gap-2">
+                                <RatingStars value={review.rating} />
+                                <span className="text-xs font-semibold text-slate-600">{review.rating}/5</span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                        <p className="mt-3 text-sm leading-6 text-slate-600">{review.comments}</p>
+                      </div>
+                    </article>
+                  );
+                })}
               </div>
             )}
           </div>
