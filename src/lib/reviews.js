@@ -40,6 +40,56 @@ export async function getProductReviews(productId) {
   return reviews.map(mapReview);
 }
 
+export async function getProductReviewSummaries(productIds) {
+  const ids = Array.isArray(productIds)
+    ? productIds.filter((productId) => typeof productId === "string" && ObjectId.isValid(productId))
+    : [];
+
+  if (ids.length === 0) {
+    return {};
+  }
+
+  const database = await getResellhubDatabase();
+  const reviews = await database
+    .collection("reviews")
+    .find({ productId: { $in: ids } })
+    .sort({ createdAt: -1 })
+    .limit(500)
+    .toArray();
+
+  const summaries = {};
+
+  for (const review of reviews.map(mapReview)) {
+    const key = review.productId;
+    if (!summaries[key]) {
+      summaries[key] = {
+        count: 0,
+        ratedCount: 0,
+        totalRating: 0,
+        averageRating: null,
+        latestReviews: [],
+      };
+    }
+
+    const summary = summaries[key];
+    summary.count += 1;
+
+    if (Number.isInteger(review.rating)) {
+      summary.ratedCount += 1;
+      summary.totalRating += review.rating;
+      summary.averageRating = summary.ratedCount
+        ? summary.totalRating / summary.ratedCount
+        : null;
+    }
+
+    if (summary.latestReviews.length < 3) {
+      summary.latestReviews.push(review);
+    }
+  }
+
+  return summaries;
+}
+
 export async function getSellerReviews(sellerId) {
   if (typeof sellerId !== "string" || !sellerId.trim()) return [];
 

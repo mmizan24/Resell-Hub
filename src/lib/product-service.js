@@ -167,7 +167,7 @@ export async function updateAdminProduct(id, payload) {
   return { data: remote?.data || null, message: remote?.message || "Product updated." };
 }
 
-export async function markProductSold(productId, soldToUserId, soldAt) {
+export async function markProductSold(productId, soldToUserId, soldAt, soldQuantity = 1) {
   ensureProductId(productId);
 
   await requestBackend(`/products/${encodeURIComponent(productId)}/status`, {
@@ -177,6 +177,7 @@ export async function markProductSold(productId, soldToUserId, soldAt) {
       status: "out of stock",
       soldToUserId,
       soldAt: soldAt?.toISOString?.() || new Date().toISOString(),
+      soldQuantity,
     }),
   });
 }

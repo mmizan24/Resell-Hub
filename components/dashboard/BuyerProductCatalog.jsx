@@ -42,6 +42,8 @@ export function BuyerProductCatalog({ products, userId }) {
               typeof product.images[0] === "string"
                 ? product.images[0]
                 : null;
+            const stockCount = Number.isInteger(product.quantity) ? product.quantity : 1;
+            const isAvailable = product.status === "available";
 
             return (
               <article
@@ -68,15 +70,15 @@ export function BuyerProductCatalog({ products, userId }) {
                   </span>
                   <span
                     className={`absolute right-3 top-3 rounded-full px-2.5 py-1 text-xs font-semibold ${
-                      product.status === "available"
+                      isAvailable
                         ? "bg-emerald-100 text-emerald-700"
                         : "bg-rose-100 text-rose-700"
                     }`}
                   >
-                    {product.status === "available" ? "Available" : "Out of stock"}
+                    {isAvailable ? "Available" : "Out of stock"}
                   </span>
                   <span className="absolute bottom-3 left-3 rounded-full bg-slate-900/85 px-2.5 py-1 text-xs font-semibold text-white">
-                    {Number.isInteger(product.quantity) ? product.quantity : 1} left
+                    {stockCount} left
                   </span>
                   <div className="absolute right-3 bottom-3">
                     <WishlistButton product={product} userId={userId} />
@@ -102,7 +104,12 @@ export function BuyerProductCatalog({ products, userId }) {
                     >
                       Details
                     </Link>
-                    <BuyButton productId={product._id} available={product.status === "available"} />
+                    <BuyButton
+                      productId={product._id}
+                      available={isAvailable}
+                      stockCount={stockCount}
+                      unitPrice={product.price}
+                    />
                   </div>
                 </div>
               </article>

@@ -1,11 +1,8 @@
-import { AdminUsersTable } from '../../../../components/dashboard/AdminUsersTable';
-import { AdminProductsTable } from '../../../../components/dashboard/AdminProductsTable';
-import { AdminOrdersTable } from '../../../../components/dashboard/AdminOrdersTable';
-import { AdminMembersPanel } from '../../../../components/dashboard/AdminMembersPanel';
 import { auth } from '@/lib/auth';
 import { getResellhubDatabase } from '@/lib/mongodb';
 import { MongoClient, ObjectId } from 'mongodb';
 import { headers } from 'next/headers';
+import Link from 'next/link';
 
 import 'server-only';
 
@@ -110,7 +107,7 @@ export default async function AdminDashboardPage() {
           <div>
             <p className="text-sm font-semibold uppercase tracking-[0.25em] text-blue-600">Admin Dashboard</p>
             <h1 className="mt-2 text-3xl font-bold text-blue-950">Platform command center</h1>
-            <p className="mt-2 text-sm text-slate-600">Full platform administration and moderation tools.</p>
+            <p className="mt-2 text-sm text-slate-600">Platform-wide overview and quick access to dedicated management pages.</p>
           </div>
           <div className="rounded-full bg-emerald-50 px-3 py-1 text-sm font-semibold text-emerald-700">
             Live operations
@@ -155,14 +152,21 @@ export default async function AdminDashboardPage() {
             <p className="mt-1 text-xs text-slate-500">Paid order value</p>
           </div>
         </div>
-      </section>
 
-      <AdminMembersPanel />
-
-      <section className="space-y-6">
-        <AdminUsersTable />
-        <AdminProductsTable />
-        <AdminOrdersTable />
+        <div className="mt-6 grid gap-3 md:grid-cols-3">
+          <Link href="/dashboard/admin/manage-users" className="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-left transition hover:border-blue-200 hover:bg-blue-50">
+            <p className="text-sm font-semibold text-slate-900">Manage users</p>
+            <p className="mt-1 text-sm text-slate-600">Review buyers, sellers, and admin members.</p>
+          </Link>
+          <Link href="/dashboard/admin/manage-products" className="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-left transition hover:border-blue-200 hover:bg-blue-50">
+            <p className="text-sm font-semibold text-slate-900">Manage products</p>
+            <p className="mt-1 text-sm text-slate-600">Approve, edit, or delete seller listings.</p>
+          </Link>
+          <Link href="/dashboard/admin/manage-orders" className="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-left transition hover:border-blue-200 hover:bg-blue-50">
+            <p className="text-sm font-semibold text-slate-900">Manage orders</p>
+            <p className="mt-1 text-sm text-slate-600">Track checkout activity and order states.</p>
+          </Link>
+        </div>
       </section>
     </main>
   );

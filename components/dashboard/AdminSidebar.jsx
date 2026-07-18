@@ -1,6 +1,8 @@
 "use client";
 
+import { usePathname } from "next/navigation";
 import { useState } from "react";
+import Link from "next/link";
 
 function DashboardIcon() {
   return (
@@ -106,15 +108,15 @@ function ChevronRightIcon() {
 }
 
 const LINKS = [
-  { href: "/dashboard/admin#overview", label: "Overview", icon: DashboardIcon },
-  { href: "/dashboard/admin#admins", label: "Admin Members", icon: UsersIcon },
-  { href: "/dashboard/admin#users", label: "Manage Users", icon: UsersIcon },
-  { href: "/dashboard/admin#products", label: "Manage Products", icon: BoxIcon },
-  { href: "/dashboard/admin#orders", label: "Manage Orders", icon: OrdersIcon },
+  { href: "/dashboard/admin", label: "Overview", icon: DashboardIcon },
+  { href: "/dashboard/admin/manage-users", label: "Manage Users", icon: UsersIcon },
+  { href: "/dashboard/admin/manage-products", label: "Manage Products", icon: BoxIcon },
+  { href: "/dashboard/admin/manage-orders", label: "Manage Orders", icon: OrdersIcon },
 ];
 
 export function AdminSidebar() {
   const [collapsed, setCollapsed] = useState(false);
+  const pathname = usePathname();
 
   return (
     <aside className={`sticky top-6 w-full self-start transition-all duration-300 ${collapsed ? "max-w-[88px]" : "max-w-[220px]"}`}>
@@ -139,20 +141,25 @@ export function AdminSidebar() {
         <div className="space-y-1.5">
           {LINKS.map((link) => {
             const Icon = link.icon;
+            const isActive =
+              pathname === link.href ||
+              (link.href !== "/dashboard/admin" && pathname.startsWith(link.href));
+
             return (
-              <a
+              <Link
                 key={link.href}
                 href={link.href}
                 className={`flex items-center rounded-xl border border-slate-200 text-sm font-medium text-slate-700 transition hover:border-blue-200 hover:bg-blue-50 hover:text-blue-800 ${
-                  collapsed ? "justify-center gap-0 px-2.5 py-2.5" : "gap-2.5 px-2.5 py-2.5"
-                }`}
+                  isActive ? "border-blue-200 bg-blue-50 text-blue-800 shadow-sm" : ""
+                } ${collapsed ? "justify-center gap-0 px-2.5 py-2.5" : "gap-2.5 px-2.5 py-2.5"}`}
+                aria-current={isActive ? "page" : undefined}
                 title={collapsed ? link.label : undefined}
               >
-                <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 text-slate-600">
+                <span className={`flex h-8 w-8 items-center justify-center rounded-lg ${isActive ? "bg-blue-100 text-blue-700" : "bg-slate-100 text-slate-600"}`}>
                   <Icon />
                 </span>
                 <span className={collapsed ? "sr-only" : "block"}>{link.label}</span>
-              </a>
+              </Link>
             );
           })}
         </div>

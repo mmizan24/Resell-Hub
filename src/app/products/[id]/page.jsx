@@ -2,6 +2,7 @@ import { ProductGallery } from "../../../../components/products/ProductGallery";
 import { BuyButton } from "../../../../components/checkout/BuyButton";
 import { ProductServiceNotice } from "../../../../components/Home/ProductServiceNotice";
 import { getProductById } from "@/lib/products";
+import { getProductReviews } from "@/lib/reviews";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
@@ -13,6 +14,42 @@ function formatPrice(price) {
   }
 
   return `৳ ${numericPrice.toLocaleString("en-BD")}`;
+}
+
+function formatDate(value) {
+  if (!value) return "Unknown date";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "Unknown date";
+  return date.toLocaleDateString("en-BD", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  });
+}
+
+function StarRow({ value }) {
+  const rating = Number(value);
+  const filled = Number.isFinite(rating) ? Math.max(0, Math.min(5, Math.round(rating))) : 0;
+
+  return (
+    <div className="flex items-center gap-0.5" aria-label={filled ? `${filled} out of 5 stars` : "No reviews"}>
+      {[1, 2, 3, 4, 5].map((star) => (
+        <svg
+          key={star}
+          viewBox="0 0 24 24"
+          className={`h-4 w-4 ${star <= filled ? "fill-amber-400 text-amber-400" : "text-slate-300"}`}
+          aria-hidden="true"
+        >
+          <path
+            d="m12 17.27 5.18 3.13-1.39-5.89L20.5 10.2l-6.03-.51L12 4.25 9.53 9.69 3.5 10.2l4.71 4.31-1.39 5.89L12 17.27Z"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            strokeLinejoin="round"
+          />
+        </svg>
+      ))}
+    </div>
+  );
 }
 
 export async function generateMetadata({ params }) {
@@ -42,10 +79,12 @@ export async function generateMetadata({ params }) {
 export default async function ProductDetailPage({ params }) {
   const { id } = await params;
   let product = null;
+  let reviews = [];
   let loadError = null;
 
   try {
     product = await getProductById(id);
+    reviews = await getProductReviews(id);
   } catch (error) {
     loadError = error;
   }
@@ -58,9 +97,17 @@ export default async function ProductDetailPage({ params }) {
     notFound();
   }
 
+  if ((product.approvalStatus || "pending") !== "approved") {
+    notFound();
+  }
+
   const isAvailable = product.status === "available";
   const stockCount = Number.isInteger(product.quantity) ? product.quantity : 1;
   const seller = product.sellerInfo || {};
+  const ratedReviews = reviews.filter((review) => Number.isInteger(Number(review.rating)));
+  const averageRating = ratedReviews.length
+    ? ratedReviews.reduce((sum, review) => sum + Number(review.rating), 0) / ratedReviews.length
+    : null;
 
   return (
     <section className="bg-slate-50 px-5 py-8 md:py-12">
@@ -120,6 +167,8 @@ export default async function ProductDetailPage({ params }) {
               <BuyButton
                 productId={product._id}
                 available={isAvailable}
+                stockCount={stockCount}
+                unitPrice={product.price}
                 className="mt-6"
               />
 
@@ -184,6 +233,71 @@ export default async function ProductDetailPage({ params }) {
                 )}
               </div>
             </aside>
+
+            <section id="reviews" className="mt-5 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+              <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-wider text-blue-600">
+                    Reviews
+                  </p>
+                  <h2 className="mt-2 text-xl font-bold text-slate-950">
+                    Buyer feedback for this product
+                  </h2>
+                  <p className="mt-2 text-sm text-slate-600">
+                    Ratings and comments from buyers who already purchased this item.
+                  </p>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="rounded-full bg-blue-50 px-3 py-1 text-sm font-semibold text-blue-700">
+                    {reviews.length} review{reviews.length === 1 ? "" : "s"}
+                  </span>
+                  <span className="rounded-full bg-amber-50 px-3 py-1 text-sm font-semibold text-amber-700">
+                    {averageRating ? averageRating.toFixed(1) : "No"} average
+                  </span>
+                </div>
+              </div>
+
+              {reviews.length === 0 ? (
+                <div className="mt-5 rounded-xl border border-dashed border-slate-300 bg-slate-50 p-6 text-sm text-slate-500">
+                  This product has no reviews yet.
+                </div>
+              ) : (
+                <div className="mt-5 grid gap-4">
+                  {reviews.map((review) => (
+                    <article key={review._id} className="rounded-2xl border border-slate-100 bg-slate-50 p-4">
+                      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                        <div>
+                          <p className="text-sm font-semibold text-slate-900">
+                            {review.reviewerInfo?.name || "Unknown buyer"}
+                          </p>
+                          <p className="mt-1 text-xs text-slate-500">
+                            {formatDate(review.createdAt)}
+                          </p>
+                        </div>
+                        <div className="flex flex-col items-start gap-1 sm:items-end">
+                          {review.rating === null || review.rating === undefined ? (
+                            <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">
+                              No rating
+                            </span>
+                          ) : (
+                            <div className="flex items-center gap-2">
+                              <StarRow value={review.rating} />
+                              <span className="text-xs font-semibold text-slate-600">
+                                {review.rating}/5
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                      <p className="mt-3 text-sm leading-6 text-slate-700">
+                        {review.comments}
+                      </p>
+                    </article>
+                  ))}
+                </div>
+              )}
+            </section>
           </div>
         </div>
       </div>

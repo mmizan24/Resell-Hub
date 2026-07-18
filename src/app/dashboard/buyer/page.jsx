@@ -3,6 +3,7 @@ import { ProductServiceNotice } from "../../../../components/Home/ProductService
 import { ProfileEditor } from "@/components/dashboard/ProfileEditor";
 import { WishlistPanel } from "../../../components/wishlist/WishlistPanel";
 import { BuyerReviewPanel } from "@/components/reviews/BuyerReviewPanel";
+import { OrderStatusFlow } from "@/components/orders/OrderStatusFlow";
 import { auth } from "@/lib/auth";
 import { getBuyerOrders } from "@/lib/orders";
 import { getAvailableProducts } from "@/lib/products";
@@ -78,6 +79,9 @@ export default async function BuyerDashboardPage() {
   const paidOrders = orders.filter(
     (order) => order.paymentStatus === "paid",
   );
+  const activeOrders = orders.filter(
+    (order) => (order.orderStatus || "pending") !== "delivered",
+  );
 
   return (
     <section className="px-5 py-8 md:px-8 md:py-10">
@@ -115,13 +119,13 @@ export default async function BuyerDashboardPage() {
           </div>
           <div className="rounded-lg border border-blue-100 bg-white p-5 shadow-sm">
             <p className="text-sm font-semibold text-slate-500">
-              Available products
+              Active tracking items
             </p>
             <p className="mt-3 text-3xl font-bold text-blue-950">
-              {products.length}
+              {activeOrders.length}
             </p>
             <p className="mt-2 text-sm text-slate-600">
-              Active listings from sellers.
+              Orders still moving through the fulfillment flow.
             </p>
           </div>
         </div>
@@ -160,7 +164,7 @@ export default async function BuyerDashboardPage() {
                 {orders.map((order) => (
                   <article
                     key={order._id}
-                    className="grid gap-3 p-5 sm:grid-cols-[1fr_auto] sm:items-center"
+                    className="grid gap-4 p-5 lg:grid-cols-[1fr_360px] lg:items-start"
                   >
                     <div>
                       <h3 className="font-bold text-slate-900">
@@ -178,8 +182,11 @@ export default async function BuyerDashboardPage() {
                             )
                           : "Date unavailable"}
                       </p>
+                      <div className="mt-4">
+                        <OrderStatusFlow status={order.orderStatus} />
+                      </div>
                     </div>
-                    <div className="sm:text-right">
+                    <div className="space-y-3 lg:text-right">
                       <p className="font-bold text-blue-700">
                         {formatPriceFromMinorUnits(
                           order.amountTotal,
@@ -197,6 +204,21 @@ export default async function BuyerDashboardPage() {
                           ? "Paid"
                           : "Payment pending"}
                       </span>
+                      <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-left">
+                        <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                          Current status
+                        </p>
+                        <p className="mt-1 text-sm font-bold text-slate-900">
+                          {(order.orderStatus || "pending")
+                            .charAt(0)
+                            .toUpperCase()}
+                          {(order.orderStatus || "pending").slice(1)}
+                        </p>
+                        <p className="mt-1 text-xs leading-5 text-slate-500">
+                          Your seller will move this order from pending to accepted,
+                          processing, shipped, and delivered.
+                        </p>
+                      </div>
                     </div>
                   </article>
                 ))}

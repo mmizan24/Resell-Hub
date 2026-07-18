@@ -1,6 +1,7 @@
 import { ProductBrowser } from "../../components/products/ProductBrowser";
 import { ProductServiceNotice } from "../../../components/Home/ProductServiceNotice";
 import { getProducts } from "@/lib/products";
+import { getProductReviewSummaries } from "@/lib/reviews";
 
 export const metadata = {
   title: "Products | ResellHub",
@@ -11,12 +12,24 @@ export const dynamic = "force-dynamic";
 
 export default async function ProductsPage({ searchParams }) {
   let products = [];
+  let reviewSummaries = {};
   let loadError = null;
 
   try {
     products = await getProducts();
   } catch (error) {
     loadError = error;
+  }
+
+  if (!loadError) {
+    try {
+      reviewSummaries = await getProductReviewSummaries(
+        products.map((product) => product._id),
+      );
+    } catch (error) {
+      console.error("Unable to load product review summaries:", error);
+      reviewSummaries = {};
+    }
   }
 
   const initialCategory =
@@ -29,7 +42,11 @@ export default async function ProductsPage({ searchParams }) {
           <ProductServiceNotice title="All products are temporarily unavailable" />
         </div>
       ) : (
-        <ProductBrowser products={products} initialCategory={initialCategory} />
+        <ProductBrowser
+          products={products}
+          initialCategory={initialCategory}
+          reviewSummaries={reviewSummaries}
+        />
       )}
     </main>
   );

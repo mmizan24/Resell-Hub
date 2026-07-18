@@ -268,6 +268,10 @@ export function ProductForm({ seller }) {
           </dl>
         </div>
 
+        <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
+          Your listing will be submitted to admin review first and will appear in the marketplace only after approval.
+        </div>
+
         {state.message && (
           <p
             role="status"

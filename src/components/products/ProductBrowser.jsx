@@ -32,7 +32,9 @@ function ProductImage({ src, title }) {
 
   return (
     <>
-      {!hasLoaded ? <div className="absolute inset-0 animate-pulse bg-slate-100" aria-hidden="true" /> : null}
+      {!hasLoaded ? (
+        <div className="absolute inset-0 animate-pulse bg-slate-100" aria-hidden="true" />
+      ) : null}
       <Image
         src={src}
         alt={`${title} product photo`}
@@ -49,7 +51,32 @@ function ProductImage({ src, title }) {
   );
 }
 
-function ProductCard({ product }) {
+function StarRow({ value }) {
+  const rating = Number(value);
+  const filled = Number.isFinite(rating) ? Math.max(0, Math.min(5, Math.round(rating))) : 0;
+
+  return (
+    <div className="flex items-center gap-0.5" aria-label={filled ? `${filled} out of 5 stars` : "No reviews"}>
+      {[1, 2, 3, 4, 5].map((star) => (
+        <svg
+          key={star}
+          viewBox="0 0 24 24"
+          className={`h-3.5 w-3.5 ${star <= filled ? "fill-amber-400 text-amber-400" : "text-slate-300"}`}
+          aria-hidden="true"
+        >
+          <path
+            d="m12 17.27 5.18 3.13-1.39-5.89L20.5 10.2l-6.03-.51L12 4.25 9.53 9.69 3.5 10.2l4.71 4.31-1.39 5.89L12 17.27Z"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            strokeLinejoin="round"
+          />
+        </svg>
+      ))}
+    </div>
+  );
+}
+
+function ProductCard({ product, reviewSummary }) {
   const image =
     Array.isArray(product.images) && typeof product.images[0] === "string"
       ? product.images[0]
@@ -57,6 +84,9 @@ function ProductCard({ product }) {
   const stockCount = Number.isInteger(product.quantity) ? product.quantity : 1;
   const priceValue = toNumber(product.price);
   const availability = (product.status || "").toLowerCase() === "available";
+  const reviewCount = reviewSummary?.count || 0;
+  const averageRating = reviewSummary?.averageRating || null;
+  const latestReview = reviewSummary?.latestReviews?.[0] || null;
 
   return (
     <article className="group overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-lg">
@@ -98,6 +128,44 @@ function ProductCard({ product }) {
           </p>
         </div>
 
+        <div className="rounded-xl border border-slate-100 bg-slate-50 p-3">
+          {reviewCount > 0 ? (
+            <div className="space-y-2">
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2">
+                  <StarRow value={averageRating} />
+                  <span className="text-xs font-semibold text-slate-700">
+                    {averageRating ? averageRating.toFixed(1) : "0.0"}
+                  </span>
+                </div>
+                <span className="text-xs font-medium text-slate-500">
+                  {reviewCount} review{reviewCount === 1 ? "" : "s"}
+                </span>
+              </div>
+              {latestReview?.comments ? (
+                <p className="line-clamp-2 text-xs leading-5 text-slate-600">
+                  “{latestReview.comments}”
+                </p>
+              ) : (
+                <p className="text-xs text-slate-500">Ratings are available for this product.</p>
+              )}
+              <Link
+                href={`/products/${product._id}#reviews`}
+                className="inline-flex text-xs font-semibold text-blue-700 transition hover:text-blue-800"
+              >
+                Read all reviews
+              </Link>
+            </div>
+          ) : (
+            <div className="space-y-1">
+              <p className="text-xs font-semibold text-slate-700">No reviews yet</p>
+              <p className="text-xs leading-5 text-slate-500">
+                Be the first buyer to share feedback after purchase.
+              </p>
+            </div>
+          )}
+        </div>
+
         <div className="flex items-end justify-between gap-3">
           <div>
             <p className="text-lg font-bold text-blue-700">৳ {priceValue.toLocaleString("en-BD")}</p>
@@ -115,7 +183,7 @@ function ProductCard({ product }) {
   );
 }
 
-export function ProductBrowser({ products = [], initialCategory = "" }) {
+export function ProductBrowser({ products = [], initialCategory = "", reviewSummaries = {} }) {
   const categoryOptions = useMemo(() => {
     const categories = new Set(["All categories"]);
 
@@ -129,6 +197,7 @@ export function ProductBrowser({ products = [], initialCategory = "" }) {
   }, [products]);
 
   const [searchTerm, setSearchTerm] = useState("");
+  const [sellerTerm, setSellerTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState(initialCategory || "All categories");
   const [sortMode, setSortMode] = useState("newest");
   const [condition, setCondition] = useState("all");
@@ -136,6 +205,7 @@ export function ProductBrowser({ products = [], initialCategory = "" }) {
 
   const filteredProducts = useMemo(() => {
     const term = searchTerm.trim().toLowerCase();
+    const sellerQuery = sellerTerm.trim().toLowerCase();
     const activeCategory = selectedCategory.toLowerCase();
 
     const filtered = products.filter((product) => {
@@ -146,12 +216,26 @@ export function ProductBrowser({ products = [], initialCategory = "" }) {
         product.status,
         product.price,
         product.description,
+        product.sellerInfo?.name,
+        product.sellerInfo?.email,
+        product.sellerInfo?.phone,
       ]
         .filter(Boolean)
         .join(" ")
         .toLowerCase();
 
       const matchesSearch = !term || fields.includes(term);
+      const matchesSeller =
+        !sellerQuery ||
+        [
+          product.sellerInfo?.name,
+          product.sellerInfo?.email,
+          product.sellerInfo?.phone,
+        ]
+          .filter(Boolean)
+          .join(" ")
+          .toLowerCase()
+          .includes(sellerQuery);
       const matchesCategory =
         selectedCategory === "All categories" ||
         (product.category || "").toLowerCase() === activeCategory;
@@ -163,7 +247,7 @@ export function ProductBrowser({ products = [], initialCategory = "" }) {
           ? (product.status || "").toLowerCase() === "available"
           : (product.status || "").toLowerCase() !== "available");
 
-      return matchesSearch && matchesCategory && matchesCondition && matchesAvailability;
+      return matchesSearch && matchesSeller && matchesCategory && matchesCondition && matchesAvailability;
     });
 
     const sorted = [...filtered];
@@ -193,10 +277,11 @@ export function ProductBrowser({ products = [], initialCategory = "" }) {
     }
 
     return sorted;
-  }, [availability, condition, products, searchTerm, selectedCategory, sortMode]);
+  }, [availability, condition, products, searchTerm, sellerTerm, selectedCategory, sortMode]);
 
   const resetFilters = () => {
     setSearchTerm("");
+    setSellerTerm("");
     setSelectedCategory("All categories");
     setSortMode("newest");
     setCondition("all");
@@ -211,7 +296,7 @@ export function ProductBrowser({ products = [], initialCategory = "" }) {
             <p className="text-sm font-semibold uppercase tracking-[0.25em] text-blue-600">Marketplace</p>
             <h1 className="mt-2 text-3xl font-bold text-blue-950">Browse all products</h1>
             <p className="mt-2 max-w-2xl text-sm text-slate-600">
-              Search by name, narrow by category, and sort by price so buyers can find the right listing faster.
+              Search by product name or seller, narrow by category, and sort by price so buyers can find the right listing faster.
             </p>
           </div>
           <div className="rounded-full bg-slate-100 px-3 py-1 text-sm font-semibold text-slate-700">
@@ -226,6 +311,16 @@ export function ProductBrowser({ products = [], initialCategory = "" }) {
               value={searchTerm}
               onChange={(event) => setSearchTerm(event.target.value)}
               placeholder="Search title, category, price, condition..."
+              className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+            />
+          </label>
+
+          <label className="block">
+            <span className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-slate-500">Seller</span>
+            <input
+              value={sellerTerm}
+              onChange={(event) => setSellerTerm(event.target.value)}
+              placeholder="Search seller name or email..."
               className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
             />
           </label>
@@ -316,7 +411,13 @@ export function ProductBrowser({ products = [], initialCategory = "" }) {
 
       <div className="mt-6 grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
         {filteredProducts.length > 0 ? (
-          filteredProducts.map((product) => <ProductCard key={product._id} product={product} />)
+          filteredProducts.map((product) => (
+            <ProductCard
+              key={product._id}
+              product={product}
+              reviewSummary={reviewSummaries?.[product._id]}
+            />
+          ))
         ) : (
           <div className="col-span-full rounded-2xl border border-dashed border-slate-300 bg-white px-6 py-16 text-center text-slate-500">
             No products match your filters.

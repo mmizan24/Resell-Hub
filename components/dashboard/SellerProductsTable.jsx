@@ -300,6 +300,9 @@ export function SellerProductsTable({ seller }) {
                     <th scope="col" className="px-5 py-3 font-semibold">
                       Status
                     </th>
+                    <th scope="col" className="px-5 py-3 font-semibold">
+                      Approval
+                    </th>
                     <th scope="col" className="px-5 py-3 text-right font-semibold">
                       Action
                     </th>
@@ -385,6 +388,28 @@ export function SellerProductsTable({ seller }) {
                                 : "Out of stock"}
                             </span>
                           </td>
+                          <td className="whitespace-nowrap px-5 py-4">
+                            <span
+                              className={`rounded-full px-2.5 py-1 text-xs font-semibold ${
+                                (product.approvalStatus || "pending") === "approved"
+                                  ? "bg-emerald-50 text-emerald-700"
+                                  : (product.approvalStatus || "pending") === "rejected"
+                                    ? "bg-rose-50 text-rose-700"
+                                    : "bg-amber-50 text-amber-700"
+                              }`}
+                            >
+                              {(product.approvalStatus || "pending") === "approved"
+                                ? "Approved"
+                                : (product.approvalStatus || "pending") === "rejected"
+                                  ? "Rejected"
+                                  : "Pending"}
+                            </span>
+                            {product.approvalStatus !== "approved" ? (
+                              <p className="mt-1 text-xs text-slate-500">
+                                Awaiting admin review before appearing in the marketplace.
+                              </p>
+                            ) : null}
+                          </td>
                           <td className="whitespace-nowrap px-5 py-4 text-right">
                             <button
                               type="button"
@@ -400,7 +425,7 @@ export function SellerProductsTable({ seller }) {
                         </tr>
                         {expandedProductId === product._id ? (
                           <tr>
-                            <td colSpan={7} className="bg-slate-50 px-5 py-5">
+                            <td colSpan={8} className="bg-slate-50 px-5 py-5">
                               <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
                                 <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
                                   <div>

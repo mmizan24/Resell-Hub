@@ -45,6 +45,8 @@ export async function POST(request) {
   }
 
   const productId = body?.productId;
+  const quantityValue = Number.parseInt(body?.quantity, 10);
+  const requestedQuantity = Number.isInteger(quantityValue) ? quantityValue : 1;
 
   if (typeof productId !== "string" || !productId.trim()) {
     return Response.json(
@@ -70,11 +72,26 @@ export async function POST(request) {
   }
 
   const price = Number(product.price);
+  const stockCount = Number.isInteger(product.quantity) && product.quantity >= 0 ? product.quantity : 0;
 
   if (!Number.isFinite(price) || price <= 0) {
     return Response.json(
       { message: "This product does not have a valid price." },
       { status: 422 },
+    );
+  }
+
+  if (!Number.isInteger(requestedQuantity) || requestedQuantity < 1) {
+    return Response.json(
+      { message: "Please choose a valid quantity." },
+      { status: 400 },
+    );
+  }
+
+  if (stockCount < requestedQuantity) {
+    return Response.json(
+      { message: `Only ${stockCount} item${stockCount === 1 ? "" : "s"} are left in stock.` },
+      { status: 409 },
     );
   }
 
@@ -105,7 +122,7 @@ export async function POST(request) {
       },
       line_items: [
         {
-          quantity: 1,
+          quantity: requestedQuantity,
           price_data: {
             currency: "bdt",
             unit_amount: unitAmount,
@@ -125,12 +142,14 @@ export async function POST(request) {
         productId,
         buyerId: buyer.id,
         sellerId: product.sellerInfo?.userId || "",
+        quantity: String(requestedQuantity),
       },
       payment_intent_data: {
         metadata: {
           productId,
           buyerId: buyer.id,
           sellerId: product.sellerInfo?.userId || "",
+          quantity: String(requestedQuantity),
         },
       },
       success_url: `${baseUrl}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
@@ -141,6 +160,7 @@ export async function POST(request) {
       checkoutSession,
       product,
       buyer,
+      quantity: requestedQuantity,
     });
   } catch (error) {
     console.error("Unable to create Stripe Checkout session:", error);

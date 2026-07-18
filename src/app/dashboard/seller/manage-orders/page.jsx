@@ -1,19 +1,17 @@
 "use client";
 
-import { ProfileEditor } from "@/components/dashboard/ProfileEditor";
-import { SellerSalesAnalyticsPanel } from "@/components/orders/SellerSalesAnalyticsPanel";
-import { SellerProductsTable } from "../../../../components/dashboard/SellerProductsTable";
+import { SellerOrdersPanel } from "@/components/orders/SellerOrdersPanel";
 import { useSession } from "@/lib/auth-client";
 import Link from "next/link";
 
-export default function SellerDashboardPage() {
+export default function SellerManageOrdersPage() {
   const { data: session, isPending } = useSession();
   const user = session?.user;
 
   if (isPending) {
     return (
       <section className="flex min-h-[360px] items-center justify-center px-5 py-12">
-        <p className="text-sm font-medium text-slate-500">Loading seller dashboard...</p>
+        <p className="text-sm font-medium text-slate-500">Loading order management page...</p>
       </section>
     );
   }
@@ -22,9 +20,9 @@ export default function SellerDashboardPage() {
     return (
       <section className="px-5 py-12 md:px-8">
         <div className="max-w-2xl rounded-lg border border-blue-100 bg-white p-6 shadow-sm">
-          <h1 className="text-2xl font-bold text-blue-950">Seller Dashboard</h1>
+          <h1 className="text-2xl font-bold text-blue-950">Manage Orders</h1>
           <p className="mt-2 text-sm text-slate-600">
-            Please sign in as a seller to manage your products and orders.
+            Please sign in as a seller to manage customer orders.
           </p>
           <Link
             href="/auth/sign-in"
@@ -43,7 +41,7 @@ export default function SellerDashboardPage() {
         <div className="max-w-2xl rounded-lg border border-amber-100 bg-white p-6 shadow-sm">
           <h1 className="text-2xl font-bold text-blue-950">Seller access only</h1>
           <p className="mt-2 text-sm text-slate-600">
-            This dashboard is available only for seller accounts.
+            This page is available only for seller accounts.
           </p>
         </div>
       </section>
@@ -52,24 +50,18 @@ export default function SellerDashboardPage() {
 
   return (
     <section className="px-5 py-8 md:px-8 md:py-10">
-      <div className="max-w-5xl">
+      <div className="mx-auto max-w-6xl">
         <p className="text-sm font-semibold uppercase tracking-wide text-blue-600">
           Seller Dashboard
         </p>
-        <h1 className="mt-2 text-3xl font-bold text-blue-950">
-          Welcome back, {user.name?.split(" ")[0] || "Seller"}.
-        </h1>
+        <h1 className="mt-2 text-3xl font-bold text-blue-950">Manage orders</h1>
         <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600">
-          Review your products and sales performance from one place. Add product
-          listings and manage orders from the dedicated dashboard pages.
+          Review paid orders and move each buyer request through the fulfillment flow.
         </p>
 
         <div className="mt-8">
-          <ProfileEditor key={user?.id || user?.email || "seller-profile"} user={user} />
+          <SellerOrdersPanel sellerId={user.id} />
         </div>
-
-        <SellerProductsTable seller={user} />
-        <SellerSalesAnalyticsPanel sellerId={user.id} />
       </div>
     </section>
   );
