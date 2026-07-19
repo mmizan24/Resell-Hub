@@ -22,7 +22,11 @@ export function DashboardSidebar() {
   const [activeSection, setActiveSection] = useState("");
 
   useEffect(() => {
-    if (typeof window === "undefined" || pathname !== "/dashboard/seller") {
+    if (
+      typeof window === "undefined" ||
+      typeof IntersectionObserver === "undefined" ||
+      pathname !== "/dashboard/seller"
+    ) {
       return undefined;
     }
 

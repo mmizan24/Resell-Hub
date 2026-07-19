@@ -2,6 +2,8 @@
 
 import Image from "next/image";
 import { useMemo, useState } from "react";
+import { PaginationControls } from "../ui/PaginationControls";
+import { paginateItems } from "@/lib/pagination";
 
 function StarIcon({ filled = false }) {
   return (
@@ -68,6 +70,10 @@ export function BuyerReviewPanel({ paidOrders = [], reviews = [] }) {
   const [message, setMessage] = useState("");
   const [messageType, setMessageType] = useState("info");
   const [savingOrderId, setSavingOrderId] = useState("");
+  const [pendingPage, setPendingPage] = useState(1);
+  const [reviewsPage, setReviewsPage] = useState(1);
+  const pendingPageSize = 4;
+  const reviewsPageSize = 4;
 
   const reviewByOrderId = useMemo(() => {
     const lookup = new Map();
@@ -81,6 +87,14 @@ export function BuyerReviewPanel({ paidOrders = [], reviews = [] }) {
 
   const pendingOrders = paidOrders.filter((order) => !reviewByOrderId.has(order._id));
   const reviewedOrders = paidOrders.filter((order) => reviewByOrderId.has(order._id));
+  const paginatedPendingOrders = useMemo(
+    () => paginateItems(pendingOrders, pendingPage, pendingPageSize),
+    [pendingOrders, pendingPage],
+  );
+  const paginatedSubmittedReviews = useMemo(
+    () => paginateItems(submittedReviews, reviewsPage, reviewsPageSize),
+    [submittedReviews, reviewsPage],
+  );
 
   function updateForm(orderId, key, value) {
     setForms((current) => ({
@@ -184,101 +198,116 @@ export function BuyerReviewPanel({ paidOrders = [], reviews = [] }) {
       ) : (
         <div className="mt-6 space-y-5">
           {pendingOrders.length > 0 ? (
-            <div className="grid gap-4 lg:grid-cols-2">
-              {pendingOrders.map((order) => {
-                const form = forms[order._id] || defaultForm();
-                const image = getProductImage(order);
+            <>
+              <div className="grid gap-4 lg:grid-cols-2">
+                {paginatedPendingOrders.items.map((order) => {
+                  const form = forms[order._id] || defaultForm();
+                  const image = getProductImage(order);
 
-                return (
-                  <article key={order._id} className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-                    <div className="grid gap-4 p-5 md:grid-cols-[120px_minmax(0,1fr)] md:items-start">
-                      <div className="overflow-hidden rounded-2xl border border-slate-200 bg-slate-50">
-                        {image ? (
-                          <Image
-                            src={image}
-                            alt={order.product?.title || "Purchased product"}
-                            width={240}
-                            height={180}
-                            unoptimized
-                            className="h-28 w-full object-contain p-2"
-                          />
-                        ) : (
-                          <div className="flex h-28 items-center justify-center text-xs font-medium text-slate-400">
-                            Image unavailable
+                  return (
+                    <article key={order._id} className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+                      <div className="grid gap-4 p-5 md:grid-cols-[120px_minmax(0,1fr)] md:items-start">
+                        <div className="overflow-hidden rounded-2xl border border-slate-200 bg-slate-50">
+                          {image ? (
+                            <Image
+                              src={image}
+                              alt={order.product?.title || "Purchased product"}
+                              width={240}
+                              height={180}
+                              unoptimized
+                              className="h-28 w-full object-contain p-2"
+                            />
+                          ) : (
+                            <div className="flex h-28 items-center justify-center text-xs font-medium text-slate-400">
+                              Image unavailable
+                            </div>
+                          )}
+                        </div>
+
+                        <div>
+                          <div className="flex items-start justify-between gap-3">
+                            <div>
+                              <p className="text-xs font-semibold uppercase tracking-wide text-blue-600">Purchased item</p>
+                              <h3 className="mt-1 text-lg font-bold text-slate-900">
+                                {order.product?.title || "Product order"}
+                              </h3>
+                              <p className="mt-1 text-sm text-slate-500">
+                                from {order.sellerInfo?.name || "Seller"}
+                              </p>
+                            </div>
+                            <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700">
+                              {formatMoney(order.amountTotal, order.currency)}
+                            </span>
                           </div>
-                        )}
-                      </div>
 
-                      <div>
-                        <div className="flex items-start justify-between gap-3">
-                          <div>
-                            <p className="text-xs font-semibold uppercase tracking-wide text-blue-600">Purchased item</p>
-                            <h3 className="mt-1 text-lg font-bold text-slate-900">
-                              {order.product?.title || "Product order"}
-                            </h3>
-                            <p className="mt-1 text-sm text-slate-500">
-                              from {order.sellerInfo?.name || "Seller"}
+                          <div className="mt-4 rounded-xl border border-slate-100 bg-slate-50 p-4">
+                            <div className="grid gap-4 md:grid-cols-[140px_minmax(0,1fr)]">
+                              <label className="space-y-1">
+                                <span className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                                  Rating
+                                </span>
+                                <select
+                                  value={form.rating}
+                                  onChange={(event) => updateForm(order._id, "rating", event.target.value)}
+                                  className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                                >
+                                  <option value="">No rating</option>
+                                  <option value="5">5 - Excellent</option>
+                                  <option value="4">4 - Very good</option>
+                                  <option value="3">3 - Good</option>
+                                  <option value="2">2 - Fair</option>
+                                  <option value="1">1 - Poor</option>
+                                </select>
+                              </label>
+
+                              <label className="space-y-1">
+                                <span className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                                  Comments
+                                </span>
+                                <textarea
+                                  value={form.comments}
+                                  onChange={(event) => updateForm(order._id, "comments", event.target.value)}
+                                  placeholder="Share what you liked, what could be better, and whether you would recommend the seller."
+                                  rows={4}
+                                  className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                                />
+                              </label>
+                            </div>
+                          </div>
+
+                          <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
+                            <p className="text-xs text-slate-500">
+                              Optional rating is supported. If you skip it, your comment still saves.
                             </p>
+                            <button
+                              type="button"
+                              onClick={() => submitReview(order)}
+                              disabled={savingOrderId === order._id}
+                              className="rounded-xl bg-blue-700 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-800 disabled:cursor-not-allowed disabled:bg-slate-400"
+                            >
+                              {savingOrderId === order._id ? "Submitting..." : "Submit review"}
+                            </button>
                           </div>
-                          <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700">
-                            {formatMoney(order.amountTotal, order.currency)}
-                          </span>
-                        </div>
-
-                        <div className="mt-4 rounded-xl border border-slate-100 bg-slate-50 p-4">
-                          <div className="grid gap-4 md:grid-cols-[140px_minmax(0,1fr)]">
-                            <label className="space-y-1">
-                              <span className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-                                Rating
-                              </span>
-                              <select
-                                value={form.rating}
-                                onChange={(event) => updateForm(order._id, "rating", event.target.value)}
-                                className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
-                              >
-                                <option value="">No rating</option>
-                                <option value="5">5 - Excellent</option>
-                                <option value="4">4 - Very good</option>
-                                <option value="3">3 - Good</option>
-                                <option value="2">2 - Fair</option>
-                                <option value="1">1 - Poor</option>
-                              </select>
-                            </label>
-
-                            <label className="space-y-1">
-                              <span className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-                                Comments
-                              </span>
-                              <textarea
-                                value={form.comments}
-                                onChange={(event) => updateForm(order._id, "comments", event.target.value)}
-                                placeholder="Share what you liked, what could be better, and whether you would recommend the seller."
-                                rows={4}
-                                className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
-                              />
-                            </label>
-                          </div>
-                        </div>
-
-                        <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
-                          <p className="text-xs text-slate-500">
-                            Optional rating is supported. If you skip it, your comment still saves.
-                          </p>
-                          <button
-                            type="button"
-                            onClick={() => submitReview(order)}
-                            disabled={savingOrderId === order._id}
-                            className="rounded-xl bg-blue-700 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-800 disabled:cursor-not-allowed disabled:bg-slate-400"
-                          >
-                            {savingOrderId === order._id ? "Submitting..." : "Submit review"}
-                          </button>
                         </div>
                       </div>
-                    </div>
-                  </article>
-                );
-              })}
-            </div>
+                    </article>
+                  );
+                })}
+              </div>
+              {paginatedPendingOrders.totalPages > 1 ? (
+                <div className="px-5 pb-5">
+                  <PaginationControls
+                    page={paginatedPendingOrders.page}
+                    totalPages={paginatedPendingOrders.totalPages}
+                    totalItems={paginatedPendingOrders.totalItems}
+                    startIndex={paginatedPendingOrders.startIndex}
+                    endIndex={paginatedPendingOrders.endIndex}
+                    itemLabel="pending reviews"
+                    onPageChange={setPendingPage}
+                  />
+                </div>
+              ) : null}
+            </>
           ) : null}
 
           <div className="rounded-2xl border border-slate-200 bg-white shadow-sm">
@@ -295,7 +324,7 @@ export function BuyerReviewPanel({ paidOrders = [], reviews = [] }) {
               </div>
             ) : (
               <div className="divide-y divide-slate-100">
-                {submittedReviews.map((review) => {
+                {paginatedSubmittedReviews.items.map((review) => {
                   const image = getProductImage(review);
 
                   return (
@@ -347,6 +376,19 @@ export function BuyerReviewPanel({ paidOrders = [], reviews = [] }) {
                 })}
               </div>
             )}
+            {paginatedSubmittedReviews.totalPages > 1 ? (
+              <div className="px-5 pb-5">
+                <PaginationControls
+                  page={paginatedSubmittedReviews.page}
+                  totalPages={paginatedSubmittedReviews.totalPages}
+                  totalItems={paginatedSubmittedReviews.totalItems}
+                  startIndex={paginatedSubmittedReviews.startIndex}
+                  endIndex={paginatedSubmittedReviews.endIndex}
+                  itemLabel="reviews"
+                  onPageChange={setReviewsPage}
+                />
+              </div>
+            ) : null}
           </div>
         </div>
       )}

@@ -1,6 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { PaginationControls } from "../../src/components/ui/PaginationControls";
+import { paginateItems } from "../../src/lib/pagination";
 
 const EMPTY_USER = {
   id: "",
@@ -23,6 +25,8 @@ export function AdminUsersTable() {
   const [form, setForm] = useState(EMPTY_USER);
   const [message, setMessage] = useState("");
   const [activeRole, setActiveRole] = useState("all");
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 10;
 
   async function fetchUsers() {
     const res = await fetch("/api/admin/users", { credentials: "include" });
@@ -66,6 +70,11 @@ export function AdminUsersTable() {
     if (activeRole === "all") return true;
     return (user.role || "buyer") === activeRole;
   });
+
+  const paginatedUsers = useMemo(
+    () => paginateItems(filteredUsers, currentPage, pageSize),
+    [currentPage, filteredUsers],
+  );
 
   function startEdit(user) {
     setEditingId(user.id);
@@ -149,7 +158,7 @@ export function AdminUsersTable() {
       ) : (
         <>
           <div className="mt-5 space-y-3 md:hidden">
-            {filteredUsers.map((user) => (
+            {paginatedUsers.items.map((user) => (
               <article key={user.id} className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
                 {editingId === user.id ? (
                   <div className="space-y-3">
@@ -262,7 +271,7 @@ export function AdminUsersTable() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 bg-white">
-                  {filteredUsers.map((user) => (
+                  {paginatedUsers.items.map((user) => (
                     <tr key={user.id} className="align-top">
                       <td className="px-4 py-3">
                         {editingId === user.id ? (
@@ -345,6 +354,18 @@ export function AdminUsersTable() {
           </div>
         </>
       )}
+
+      {paginatedUsers.totalPages > 1 ? (
+        <PaginationControls
+          page={paginatedUsers.page}
+          totalPages={paginatedUsers.totalPages}
+          totalItems={paginatedUsers.totalItems}
+          startIndex={paginatedUsers.startIndex}
+          endIndex={paginatedUsers.endIndex}
+          itemLabel="users"
+          onPageChange={setCurrentPage}
+        />
+      ) : null}
     </section>
   );
 }

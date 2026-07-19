@@ -3,6 +3,8 @@
 import { uploadImage, validateImageFile } from "@/lib/image-upload";
 import Image from "next/image";
 import { Fragment, useEffect, useMemo, useState } from "react";
+import { PaginationControls } from "../../src/components/ui/PaginationControls";
+import { paginateItems } from "../../src/lib/pagination";
 
 const CATEGORIES = [
   "Electronics",
@@ -52,6 +54,34 @@ function formatReviewDate(value) {
   });
 }
 
+function approvalTone(status) {
+  const normalized = (status || "pending").toLowerCase();
+
+  if (normalized === "approved") {
+    return "bg-emerald-50 text-emerald-700";
+  }
+
+  if (normalized === "rejected") {
+    return "bg-rose-50 text-rose-700";
+  }
+
+  return "bg-amber-50 text-amber-700";
+}
+
+function approvalLabel(status) {
+  const normalized = (status || "pending").toLowerCase();
+
+  if (normalized === "approved") {
+    return "Approved";
+  }
+
+  if (normalized === "rejected") {
+    return "Rejected";
+  }
+
+  return "Pending approval";
+}
+
 export function SellerProductsTable({ seller }) {
   const [products, setProducts] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -63,6 +93,8 @@ export function SellerProductsTable({ seller }) {
   const [reviewsLoading, setReviewsLoading] = useState(true);
   const [reviewsError, setReviewsError] = useState("");
   const [expandedProductId, setExpandedProductId] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 6;
 
   useEffect(() => {
     let isActive = true;
@@ -163,6 +195,11 @@ export function SellerProductsTable({ seller }) {
     });
     return map;
   }, [reviews]);
+
+  const paginatedProducts = useMemo(
+    () => paginateItems(products, currentPage, pageSize),
+    [currentPage, products],
+  );
 
   async function handleUpdate(event) {
     event.preventDefault();
@@ -279,7 +316,7 @@ export function SellerProductsTable({ seller }) {
             ) : null}
 
             <div className="md:hidden divide-y divide-slate-100">
-              {products.map((product) => {
+              {paginatedProducts.items.map((product) => {
                 const productReviews = reviewsByProduct.get(String(product._id)) || [];
                 const hasRatedReviews = productReviews.filter((review) => Number.isInteger(Number(review.rating)));
                 const ratedAverage = hasRatedReviews.length
@@ -417,7 +454,7 @@ export function SellerProductsTable({ seller }) {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
-                  {products.map((product) => {
+                  {paginatedProducts.items.map((product) => {
                     const productReviews = reviewsByProduct.get(String(product._id)) || [];
                     const hasRatedReviews = productReviews.filter((review) => Number.isInteger(Number(review.rating)));
                     const ratedAverage = hasRatedReviews.length
@@ -613,6 +650,18 @@ export function SellerProductsTable({ seller }) {
         )}
       </div>
 
+      {paginatedProducts.totalPages > 1 ? (
+        <PaginationControls
+          page={paginatedProducts.page}
+          totalPages={paginatedProducts.totalPages}
+          totalItems={paginatedProducts.totalItems}
+          startIndex={paginatedProducts.startIndex}
+          endIndex={paginatedProducts.endIndex}
+          itemLabel="products"
+          onPageChange={setCurrentPage}
+        />
+      ) : null}
+
       {editingProduct && (
         <EditProductDialog
           key={editingProduct._id}
@@ -782,7 +831,7 @@ function EditProductDialog({ product, isSaving, error, onClose, onSubmit }) {
               className="mt-1.5 block w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-600 file:mr-3 file:rounded-md file:border-0 file:bg-blue-50 file:px-3 file:py-2 file:text-sm file:font-semibold file:text-blue-700"
             />
             <span className="mt-1.5 block text-xs font-normal text-slate-500">
-              Leave empty to keep the existing {product.images.length} image(s),
+              Leave empty to keep the existing {Array.isArray(product.images) ? product.images.length : 0} image(s),
               or select up to 8 replacements for ImgBB.
             </span>
           </label>

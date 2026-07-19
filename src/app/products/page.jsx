@@ -11,6 +11,7 @@ export const metadata = {
 export const dynamic = "force-dynamic";
 
 export default async function ProductsPage({ searchParams }) {
+  const params = await searchParams;
   let products = [];
   let reviewSummaries = {};
   let loadError = null;
@@ -33,7 +34,7 @@ export default async function ProductsPage({ searchParams }) {
   }
 
   const initialCategory =
-    typeof searchParams?.category === "string" ? searchParams.category : "";
+    typeof params?.category === "string" ? params.category : "";
 
   return (
     <main className="bg-slate-50">

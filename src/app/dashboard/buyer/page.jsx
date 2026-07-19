@@ -8,6 +8,8 @@ import { auth } from "@/lib/auth";
 import { getBuyerOrders } from "@/lib/orders";
 import { getAvailableProducts } from "@/lib/products";
 import { getBuyerReviews } from "@/lib/reviews";
+import { PaginationLinks } from "@/components/ui/PaginationLinks";
+import { normalizePage, paginateItems } from "@/lib/pagination";
 import { headers } from "next/headers";
 import Image from "next/image";
 import Link from "next/link";
@@ -25,7 +27,8 @@ function formatPriceFromMinorUnits(amount, currency) {
 
 export const dynamic = "force-dynamic";
 
-export default async function BuyerDashboardPage() {
+export default async function BuyerDashboardPage({ searchParams }) {
+  const params = await searchParams;
   const session = await auth.api.getSession({
     headers: await headers(),
   });
@@ -75,6 +78,8 @@ export default async function BuyerDashboardPage() {
     productsResult.status === "fulfilled" ? productsResult.value : [];
   const orders = ordersResult.status === "fulfilled" ? ordersResult.value : [];
   const reviews = reviewsResult.status === "fulfilled" ? reviewsResult.value : [];
+  const ordersPage = normalizePage(params?.page, 1);
+  const paginatedOrders = paginateItems(orders, ordersPage, 5);
   const productsLoadFailed = productsResult.status === "rejected";
   const ordersLoadFailed = ordersResult.status === "rejected";
   const paidOrders = orders.filter(
@@ -162,7 +167,7 @@ export default async function BuyerDashboardPage() {
           ) : (
             <div className="mt-5 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
               <div className="divide-y divide-slate-100">
-                {orders.map((order) => (
+                {paginatedOrders.items.map((order) => (
                   <article
                     key={order._id}
                     className="grid gap-4 p-5 lg:grid-cols-[120px_minmax(0,1fr)_360px] lg:items-start"
@@ -241,10 +246,24 @@ export default async function BuyerDashboardPage() {
                     </div>
                   </article>
                 ))}
-              </div>
             </div>
-          )}
-        </section>
+            {paginatedOrders.totalPages > 1 ? (
+              <div className="px-5 pb-5">
+                <PaginationLinks
+                  basePath="/dashboard/buyer"
+                  searchParams={ordersPage > 1 ? { page: ordersPage } : {}}
+                  page={paginatedOrders.page}
+                  totalPages={paginatedOrders.totalPages}
+                  totalItems={paginatedOrders.totalItems}
+                  startIndex={paginatedOrders.startIndex}
+                  endIndex={paginatedOrders.endIndex}
+                  itemLabel="orders"
+                />
+              </div>
+            ) : null}
+          </div>
+        )}
+      </section>
 
         <div className="mt-10 grid gap-4 md:grid-cols-2">
           <div

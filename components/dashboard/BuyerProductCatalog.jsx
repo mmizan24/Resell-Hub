@@ -1,7 +1,12 @@
+"use client";
+
 import { BuyButton } from "../checkout/BuyButton";
 import { WishlistButton } from "../../src/components/wishlist/WishlistButton";
+import { PaginationControls } from "../../src/components/ui/PaginationControls";
+import { paginateItems } from "../../src/lib/pagination";
 import Image from "next/image";
 import Link from "next/link";
+import { useMemo, useState } from "react";
 
 function formatPrice(price) {
   const numericPrice = Number(price);
@@ -11,6 +16,13 @@ function formatPrice(price) {
 }
 
 export function BuyerProductCatalog({ products, userId }) {
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 9;
+  const paginatedProducts = useMemo(
+    () => paginateItems(products, currentPage, pageSize),
+    [currentPage, products],
+  );
+
   return (
     <section id="all-seller-products" className="mt-10 scroll-mt-24">
       <div>
@@ -36,7 +48,7 @@ export function BuyerProductCatalog({ products, userId }) {
         </div>
       ) : (
         <div className="mt-6 grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
-          {products.map((product) => {
+          {paginatedProducts.items.map((product) => {
             const image =
               Array.isArray(product.images) &&
               typeof product.images[0] === "string"
@@ -117,6 +129,18 @@ export function BuyerProductCatalog({ products, userId }) {
           })}
         </div>
       )}
+
+      {paginatedProducts.totalPages > 1 ? (
+        <PaginationControls
+          page={paginatedProducts.page}
+          totalPages={paginatedProducts.totalPages}
+          totalItems={paginatedProducts.totalItems}
+          startIndex={paginatedProducts.startIndex}
+          endIndex={paginatedProducts.endIndex}
+          itemLabel="products"
+          onPageChange={setCurrentPage}
+        />
+      ) : null}
     </section>
   );
 }

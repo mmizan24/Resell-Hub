@@ -1,4 +1,9 @@
+"use client";
+
 import Link from "next/link";
+import { useMemo, useState } from "react";
+import { PaginationControls } from "../../src/components/ui/PaginationControls";
+import { paginateItems } from "../../src/lib/pagination";
 
 function formatMoney(amount, currency) {
   if (!Number.isFinite(amount)) {
@@ -29,6 +34,12 @@ function formatDate(value) {
 }
 
 export function BuyerTransactionPanel({ payments = [] }) {
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 8;
+  const paginatedPayments = useMemo(
+    () => paginateItems(payments, currentPage, pageSize),
+    [currentPage, payments],
+  );
   const totalAmount = payments.reduce((sum, payment) => sum + Number(payment.amountTotal || 0), 0);
   const latestPayment = payments[0] || null;
   const paidCount = payments.filter((payment) => payment.paymentStatus === "paid").length;
@@ -76,7 +87,7 @@ export function BuyerTransactionPanel({ payments = [] }) {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
-                {payments.map((payment) => (
+                {paginatedPayments.items.map((payment) => (
                   <tr key={payment._id || payment.transactionId} className="align-top">
                     <td className="px-5 py-4 font-medium text-slate-900">
                       <div className="max-w-[220px] break-all">{payment.transactionId}</div>
@@ -115,6 +126,18 @@ export function BuyerTransactionPanel({ payments = [] }) {
           </div>
         )}
       </div>
+
+      {paginatedPayments.totalPages > 1 ? (
+        <PaginationControls
+          page={paginatedPayments.page}
+          totalPages={paginatedPayments.totalPages}
+          totalItems={paginatedPayments.totalItems}
+          startIndex={paginatedPayments.startIndex}
+          endIndex={paginatedPayments.endIndex}
+          itemLabel="transactions"
+          onPageChange={setCurrentPage}
+        />
+      ) : null}
     </section>
   );
 }

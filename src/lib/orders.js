@@ -1,17 +1,10 @@
 import "server-only";
 
+import { buildBackendUrl } from "@/lib/backend";
 import { getResellhubDatabase } from "@/lib/mongodb";
 import { markProductSold } from "@/lib/product-service";
 import { getStripe } from "@/lib/stripe";
 import { ObjectId } from "mongodb";
-
-const backendBaseUrl = (process.env.API_URL?.trim() || "http://127.0.0.1:5000").replace(/\/$/, "");
-const backendApiBase = `${backendBaseUrl}/api`;
-
-function buildBackendUrl(path) {
-  const normalizedPath = path.startsWith("/") ? path : `/${path}`;
-  return `${backendApiBase}${normalizedPath}`;
-}
 
 async function readBackendJson(response) {
   const data = await response.json().catch(() => null);

@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { PaginationControls } from "../../src/components/ui/PaginationControls";
+import { paginateItems } from "../../src/lib/pagination";
 
 const EMPTY_FORM = {
   title: "",
@@ -49,6 +51,8 @@ export function AdminProductsTable() {
   const [searchTerm, setSearchTerm] = useState("");
   const [sortMode, setSortMode] = useState("newest");
   const [approvalFilter, setApprovalFilter] = useState("all");
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 8;
 
   const totalQuantity = useMemo(
     () =>
@@ -104,6 +108,11 @@ export function AdminProductsTable() {
         return sorted;
     }
   }, [products, searchTerm, sortMode, approvalFilter]);
+
+  const paginatedProducts = useMemo(
+    () => paginateItems(visibleProducts, currentPage, pageSize),
+    [currentPage, visibleProducts],
+  );
 
   async function loadProducts() {
     try {
@@ -331,7 +340,7 @@ export function AdminProductsTable() {
         <p className="mt-5 text-sm text-slate-500">No products match your search.</p>
       ) : (
         <div className="mt-5 space-y-4">
-          {visibleProducts.map((product) => {
+          {paginatedProducts.items.map((product) => {
             const approvalStatus = (product.approvalStatus || "pending").toLowerCase();
 
             return (
@@ -489,6 +498,18 @@ export function AdminProductsTable() {
           })}
         </div>
       )}
+
+      {paginatedProducts.totalPages > 1 ? (
+        <PaginationControls
+          page={paginatedProducts.page}
+          totalPages={paginatedProducts.totalPages}
+          totalItems={paginatedProducts.totalItems}
+          startIndex={paginatedProducts.startIndex}
+          endIndex={paginatedProducts.endIndex}
+          itemLabel="products"
+          onPageChange={setCurrentPage}
+        />
+      ) : null}
     </section>
   );
 }

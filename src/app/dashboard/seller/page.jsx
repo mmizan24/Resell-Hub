@@ -1,22 +1,21 @@
-"use client";
-
 import { ProfileEditor } from "@/components/dashboard/ProfileEditor";
 import { SellerSalesAnalyticsPanel } from "@/components/orders/SellerSalesAnalyticsPanel";
 import { SellerProductsTable } from "../../../../components/dashboard/SellerProductsTable";
-import { useSession } from "@/lib/auth-client";
+import { auth } from "@/lib/auth";
+import { headers } from "next/headers";
 import Link from "next/link";
 
-export default function SellerDashboardPage() {
-  const { data: session, isPending } = useSession();
-  const user = session?.user;
+export const dynamic = "force-dynamic";
 
-  if (isPending) {
-    return (
-      <section className="flex min-h-[360px] items-center justify-center px-5 py-12">
-        <p className="text-sm font-medium text-slate-500">Loading seller dashboard...</p>
-      </section>
-    );
-  }
+export default async function SellerDashboardPage() {
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+  const user = session?.user;
+  const displayName =
+    typeof user?.name === "string" && user.name.trim()
+      ? user.name.trim().split(/\s+/)[0]
+      : "Seller";
 
   if (!user) {
     return (
@@ -57,7 +56,7 @@ export default function SellerDashboardPage() {
           Seller Dashboard
         </p>
         <h1 className="mt-2 text-3xl font-bold text-blue-950">
-          Welcome back, {user.name?.split(" ")[0] || "Seller"}.
+          Welcome back, {displayName}.
         </h1>
         <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600">
           Review your products and sales performance from one place. Add product

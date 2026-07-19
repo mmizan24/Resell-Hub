@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { ProductServiceNotice } from "../../../components/Home/ProductServiceNotice";
 import { getProducts } from "@/lib/products";
+import { PaginationLinks } from "@/components/ui/PaginationLinks";
+import { normalizePage, paginateItems } from "@/lib/pagination";
 
 export const metadata = {
   title: "Categories | ResellHub",
@@ -88,7 +90,11 @@ function buildCategoryStats(products) {
   return Array.from(stats.values()).sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
 }
 
-export default async function CategoriesPage() {
+export default async function CategoriesPage({ searchParams }) {
+  const params = await searchParams;
+  const page = normalizePage(params?.page, 1);
+  const pageSize = 6;
+
   let products = [];
   let loadError = null;
 
@@ -99,6 +105,7 @@ export default async function CategoriesPage() {
   }
 
   const categories = buildCategoryStats(products);
+  const paginatedCategories = paginateItems(categories, page, pageSize);
   const totalListings = products.length;
   const activeCategories = categories.filter((category) => category.count > 0).length;
   const topCategory = categories[0];
@@ -153,7 +160,7 @@ export default async function CategoriesPage() {
         ) : null}
 
         <div className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-          {categories.map((category) => (
+          {paginatedCategories.items.map((category) => (
             <Link
               key={category.name}
               href={`/products?category=${encodeURIComponent(category.name)}`}
@@ -186,6 +193,19 @@ export default async function CategoriesPage() {
             </Link>
           ))}
         </div>
+
+        {paginatedCategories.totalPages > 1 ? (
+          <PaginationLinks
+            basePath="/categories"
+            searchParams={{ page }}
+            page={paginatedCategories.page}
+            totalPages={paginatedCategories.totalPages}
+            totalItems={paginatedCategories.totalItems}
+            startIndex={paginatedCategories.startIndex}
+            endIndex={paginatedCategories.endIndex}
+            itemLabel="categories"
+          />
+        ) : null}
       </section>
     </main>
   );

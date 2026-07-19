@@ -2,6 +2,8 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { OrderStatusFlow } from "./OrderStatusFlow";
+import { PaginationControls } from "../../components/ui/PaginationControls";
+import { paginateItems } from "@/lib/pagination";
 
 const ORDER_STATUS_FLOW = [
   "pending",
@@ -53,6 +55,8 @@ export function SellerOrdersPanel({ sellerId }) {
   const [message, setMessage] = useState("");
   const [messageType, setMessageType] = useState("info");
   const [savingId, setSavingId] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 6;
 
   useEffect(() => {
     let active = true;
@@ -99,6 +103,11 @@ export function SellerOrdersPanel({ sellerId }) {
       { pending: 0, accepted: 0, processing: 0, shipped: 0, delivered: 0 },
     );
   }, [orders]);
+
+  const paginatedOrders = useMemo(
+    () => paginateItems(orders, currentPage, pageSize),
+    [currentPage, orders],
+  );
 
   async function advanceOrder(orderId, currentStatus) {
     const currentIndex = ORDER_STATUS_FLOW.indexOf(normalizeOrderStatus(currentStatus));
@@ -182,7 +191,7 @@ export function SellerOrdersPanel({ sellerId }) {
           </p>
         ) : (
           <div className="divide-y divide-slate-100">
-            {orders.map((order) => {
+            {paginatedOrders.items.map((order) => {
               const currentStatus = normalizeOrderStatus(order.orderStatus);
               const currentIndex = ORDER_STATUS_FLOW.indexOf(currentStatus);
               const nextStatus = ORDER_STATUS_FLOW[currentIndex + 1];
@@ -245,6 +254,18 @@ export function SellerOrdersPanel({ sellerId }) {
           </div>
         )}
       </div>
+
+      {paginatedOrders.totalPages > 1 ? (
+        <PaginationControls
+          page={paginatedOrders.page}
+          totalPages={paginatedOrders.totalPages}
+          totalItems={paginatedOrders.totalItems}
+          startIndex={paginatedOrders.startIndex}
+          endIndex={paginatedOrders.endIndex}
+          itemLabel="orders"
+          onPageChange={setCurrentPage}
+        />
+      ) : null}
     </section>
   );
 }

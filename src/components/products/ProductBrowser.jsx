@@ -3,6 +3,8 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useMemo, useState } from "react";
+import { PaginationControls } from "../ui/PaginationControls";
+import { paginateItems } from "@/lib/pagination";
 
 function toNumber(value) {
   const numeric = Number(value);
@@ -202,6 +204,8 @@ export function ProductBrowser({ products = [], initialCategory = "", reviewSumm
   const [sortMode, setSortMode] = useState("newest");
   const [condition, setCondition] = useState("all");
   const [availability, setAvailability] = useState("all");
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 12;
 
   const filteredProducts = useMemo(() => {
     const term = searchTerm.trim().toLowerCase();
@@ -279,6 +283,11 @@ export function ProductBrowser({ products = [], initialCategory = "", reviewSumm
     return sorted;
   }, [availability, condition, products, searchTerm, sellerTerm, selectedCategory, sortMode]);
 
+  const paginatedProducts = useMemo(
+    () => paginateItems(filteredProducts, currentPage, pageSize),
+    [currentPage, filteredProducts],
+  );
+
   const resetFilters = () => {
     setSearchTerm("");
     setSellerTerm("");
@@ -286,6 +295,7 @@ export function ProductBrowser({ products = [], initialCategory = "", reviewSumm
     setSortMode("newest");
     setCondition("all");
     setAvailability("all");
+    setCurrentPage(1);
   };
 
   return (
@@ -410,8 +420,8 @@ export function ProductBrowser({ products = [], initialCategory = "", reviewSumm
       </div>
 
       <div className="mt-6 grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
-        {filteredProducts.length > 0 ? (
-          filteredProducts.map((product) => (
+        {paginatedProducts.items.length > 0 ? (
+          paginatedProducts.items.map((product) => (
             <ProductCard
               key={product._id}
               product={product}
@@ -424,6 +434,18 @@ export function ProductBrowser({ products = [], initialCategory = "", reviewSumm
           </div>
         )}
       </div>
+
+      {paginatedProducts.totalPages > 1 ? (
+        <PaginationControls
+          page={paginatedProducts.page}
+          totalPages={paginatedProducts.totalPages}
+          totalItems={paginatedProducts.totalItems}
+          startIndex={paginatedProducts.startIndex}
+          endIndex={paginatedProducts.endIndex}
+          itemLabel="listings"
+          onPageChange={setCurrentPage}
+        />
+      ) : null}
     </section>
   );
 }

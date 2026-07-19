@@ -1,5 +1,7 @@
 import { ProductServiceNotice } from "../../../components/Home/ProductServiceNotice";
 import { getSellerDirectory } from "@/lib/marketplace";
+import { PaginationLinks } from "@/components/ui/PaginationLinks";
+import { normalizePage, paginateItems } from "@/lib/pagination";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -23,16 +25,19 @@ function getInitials(value) {
 export default async function SellersPage({ searchParams }) {
   const params = await searchParams;
   const q = typeof params?.q === "string" ? params.q.trim() : "";
+  const page = normalizePage(params?.page, 1);
+  const pageSize = 12;
 
   let sellers = [];
   let loadError = null;
 
   try {
-    sellers = await getSellerDirectory({ limit: 100, search: q });
+    sellers = await getSellerDirectory({ limit: 200, search: q });
   } catch (error) {
     loadError = error;
   }
 
+  const paginatedSellers = paginateItems(sellers, page, pageSize);
   const totalListings = sellers.reduce((sum, seller) => sum + Number(seller.productCount || 0), 0);
   const totalSales = sellers.reduce((sum, seller) => sum + Number(seller.orderCount || seller.soldCount || 0), 0);
   const averageRating = sellers.length
@@ -84,7 +89,7 @@ export default async function SellersPage({ searchParams }) {
           </div>
         ) : (
           <div className="mt-6 grid gap-4 lg:grid-cols-2 xl:grid-cols-3">
-            {sellers.map((seller) => (
+            {paginatedSellers.items.map((seller) => (
               <article
                 key={seller._id}
                 className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
@@ -169,6 +174,19 @@ export default async function SellersPage({ searchParams }) {
             ))}
           </div>
         )}
+
+        {paginatedSellers.totalPages > 1 ? (
+          <PaginationLinks
+            basePath="/sellers"
+            searchParams={q ? { q } : {}}
+            page={paginatedSellers.page}
+            totalPages={paginatedSellers.totalPages}
+            totalItems={paginatedSellers.totalItems}
+            startIndex={paginatedSellers.startIndex}
+            endIndex={paginatedSellers.endIndex}
+            itemLabel="sellers"
+          />
+        ) : null}
       </section>
     </main>
   );

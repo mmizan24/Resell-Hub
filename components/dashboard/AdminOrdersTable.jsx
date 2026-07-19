@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { PaginationControls } from "../../src/components/ui/PaginationControls";
+import { paginateItems } from "../../src/lib/pagination";
 
 function displayValue(value) {
   return value || "N/A";
@@ -20,6 +22,8 @@ export function AdminOrdersTable() {
   const [message, setMessage] = useState("");
   const [editingId, setEditingId] = useState(null);
   const [form, setForm] = useState({ orderStatus: "", paymentStatus: "", amountTotal: "", currency: "" });
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 8;
 
   async function fetchOrders() {
     const res = await fetch("/api/admin/orders", { credentials: "include" });
@@ -31,6 +35,8 @@ export function AdminOrdersTable() {
 
     return json.data || [];
   }
+
+  const paginatedOrders = paginateItems(orders, currentPage, pageSize);
 
   useEffect(() => {
     let active = true;
@@ -111,7 +117,7 @@ export function AdminOrdersTable() {
       ) : (
         <>
           <div className="mt-5 space-y-3 md:hidden">
-            {orders.map((order) => (
+            {paginatedOrders.items.map((order) => (
               <article key={order._id} className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
                 {editingId === order._id ? (
                   <div className="space-y-3">
@@ -234,7 +240,7 @@ export function AdminOrdersTable() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 bg-white">
-                  {orders.map((order) => (
+                  {paginatedOrders.items.map((order) => (
                     <tr key={order._id} className="align-top">
                       <td className="px-4 py-3">
                         <div className="font-semibold text-slate-900">{displayValue(order.buyerInfo?.name)}</div>
@@ -321,6 +327,18 @@ export function AdminOrdersTable() {
           </div>
         </>
       )}
+
+      {paginatedOrders.totalPages > 1 ? (
+        <PaginationControls
+          page={paginatedOrders.page}
+          totalPages={paginatedOrders.totalPages}
+          totalItems={paginatedOrders.totalItems}
+          startIndex={paginatedOrders.startIndex}
+          endIndex={paginatedOrders.endIndex}
+          itemLabel="orders"
+          onPageChange={setCurrentPage}
+        />
+      ) : null}
     </section>
   );
 }
